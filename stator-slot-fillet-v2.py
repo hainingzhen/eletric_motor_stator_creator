@@ -29,7 +29,8 @@ stator = BRepAlgoAPI_Cut(stator_outer, stator_inner).Shape()
 
 # Basic slot dimensions
 num_of_slots = 15
-fillet_radius = 5
+fillet_radius_base = 5
+fillet_radius_top = 2
 slot_opening_depth = 10
 slot_depth = 70
 slot_top_radius = stator_inner_radius + slot_opening_depth
@@ -75,22 +76,31 @@ spt = gp_Pnt2d(stator_inner_radius, 0)
 spb = gp_Pnt2d(stator_inner_radius + slot_opening_depth, 0)
 
 # Defining vertex for fillet
-p1_pnt = gp_Pnt(math.cos(slot_top_angle) * slot_top_radius, math.sin(slot_top_angle) * slot_top_radius, 0)
+p1_pnt = gp_Pnt(math.cos(slot_top_angle) * slot_top_radius,
+                math.sin(slot_top_angle) * slot_top_radius,
+                0)
 p1_pnt_extrude = gp_Pnt(math.cos(slot_top_angle) * slot_top_radius,
                         math.sin(slot_top_angle) * slot_top_radius,
                         active_length)
-p2_pnt = gp_Pnt(math.cos(slot_top_angle) * slot_top_radius, -(math.sin(slot_top_angle) * slot_top_radius), 0)
+p2_pnt = gp_Pnt(math.cos(slot_top_angle) * slot_top_radius,
+                -(math.sin(slot_top_angle) * slot_top_radius),
+                0)
 p2_pnt_extrude = gp_Pnt(math.cos(slot_top_angle) * slot_top_radius,
                         -(math.sin(slot_top_angle) * slot_top_radius),
                         active_length)
-p3_pnt = gp_Pnt(math.cos(slot_base_angle) * slot_base_radius, math.sin(slot_base_angle) * slot_base_radius, 0)
+p3_pnt = gp_Pnt(math.cos(slot_base_angle) * slot_base_radius,
+                math.sin(slot_base_angle) * slot_base_radius,
+                0)
 p3_pnt_extrude = gp_Pnt(math.cos(slot_base_angle) * slot_base_radius,
                         math.sin(slot_base_angle) * slot_base_radius,
                         active_length)
-p4_pnt = gp_Pnt(math.cos(slot_base_angle) * slot_base_radius, -(math.sin(slot_base_angle) * slot_base_radius), 0)
+p4_pnt = gp_Pnt(math.cos(slot_base_angle) * slot_base_radius,
+                -(math.sin(slot_base_angle) * slot_base_radius),
+                0)
 p4_pnt_extrude = gp_Pnt(math.cos(slot_base_angle) * slot_base_radius,
                         -(math.sin(slot_base_angle) * slot_base_radius),
                         active_length)
+
 v1 = BRepBuilderAPI_MakeVertex(p1_pnt).Vertex()
 v1_extrude = BRepBuilderAPI_MakeVertex(p1_pnt_extrude).Vertex()
 v2 = BRepBuilderAPI_MakeVertex(p2_pnt).Vertex()
@@ -132,6 +142,43 @@ slot_opening = BRepPrimAPI_MakePrism(slot_opening_face, active_length_vec, False
 slot_opening.Build()
 slot_opening = slot_opening.Shape()
 
+p1_pnt_X = math.trunc(p1_pnt.Coord(1) * 1_000_000) / 1_000_000
+p1_pnt_Y = math.trunc(p1_pnt.Coord(2) * 1_000_000) / 1_000_000
+p1_pnt_Z = math.trunc(p1_pnt.Coord(3) * 1_000_000) / 1_000_100
+p2_pnt_X = math.trunc(p2_pnt.Coord(1) * 1_000_000) / 1_000_000
+p2_pnt_Y = math.trunc(p2_pnt.Coord(2) * 1_000_000) / 1_000_000
+p2_pnt_Z = math.trunc(p2_pnt.Coord(3) * 1_000_000) / 1_000_000
+p3_pnt_X = math.trunc(p3_pnt.Coord(1) * 1_000_000) / 1_000_000
+p3_pnt_Y = math.trunc(p3_pnt.Coord(2) * 1_000_000) / 1_000_000
+p3_pnt_Z = math.trunc(p3_pnt.Coord(3) * 1_000_000) / 1_000_000
+p4_pnt_X = math.trunc(p4_pnt.Coord(1) * 1_000_000) / 1_000_000
+p4_pnt_Y = math.trunc(p4_pnt.Coord(2) * 1_000_000) / 1_000_000
+p4_pnt_Z = math.trunc(p4_pnt.Coord(3) * 1_000_000) / 1_000_000
+p1_pnt_extrude_X = math.trunc(p1_pnt_extrude.Coord(1) * 1_000_000) / 1_000_000
+p1_pnt_extrude_Y = math.trunc(p1_pnt_extrude.Coord(2) * 1_000_000) / 1_000_000
+p1_pnt_extrude_Z = math.trunc(p1_pnt_extrude.Coord(3) * 1_000_000) / 1_000_000
+p2_pnt_extrude_X = math.trunc(p2_pnt_extrude.Coord(1) * 1_000_000) / 1_000_000
+p2_pnt_extrude_Y = math.trunc(p2_pnt_extrude.Coord(2) * 1_000_000) / 1_000_000
+p2_pnt_extrude_Z = math.trunc(p2_pnt_extrude.Coord(3) * 1_000_000) / 1_000_000
+p3_pnt_extrude_X = math.trunc(p3_pnt_extrude.Coord(1) * 1_000_000) / 1_000_000
+p3_pnt_extrude_Y = math.trunc(p3_pnt_extrude.Coord(2) * 1_000_000) / 1_000_000
+p3_pnt_extrude_Z = math.trunc(p3_pnt_extrude.Coord(3) * 1_000_000) / 1_000_000
+p4_pnt_extrude_X = math.trunc(p4_pnt_extrude.Coord(1) * 1_000_000) / 1_000_000
+p4_pnt_extrude_Y = math.trunc(p4_pnt_extrude.Coord(2) * 1_000_000) / 1_000_000
+p4_pnt_extrude_Z = math.trunc(p4_pnt_extrude.Coord(3) * 1_000_000) / 1_000_000
+
+p1_pnt_array = [p1_pnt_X, p1_pnt_Y, p1_pnt_Z]
+p2_pnt_array = [p2_pnt_X, p2_pnt_Y, p2_pnt_Z]
+p3_pnt_array = [p3_pnt_X, p3_pnt_Y, p3_pnt_Z]
+p4_pnt_array = [p4_pnt_X, p4_pnt_Y, p4_pnt_Z]
+p1_pnt_extrude_array = [p1_pnt_extrude_X, p1_pnt_extrude_Y, p1_pnt_extrude_Z]
+p2_pnt_extrude_array = [p2_pnt_extrude_X, p2_pnt_extrude_Y, p2_pnt_extrude_Z]
+p3_pnt_extrude_array = [p3_pnt_extrude_X, p3_pnt_extrude_Y, p3_pnt_extrude_Z]
+p4_pnt_extrude_array = [p4_pnt_extrude_X, p4_pnt_extrude_Y, p4_pnt_extrude_Z]
+
+print("Point 1: ", p1_pnt_array)
+print("Point 2: ", p1_pnt_extrude_array)
+
 # Find edge to fillet
 fillets = BRepFilletAPI_MakeFillet(slot)
 edges = TopExp_Explorer(slot, TopAbs_EDGE)
@@ -139,15 +186,49 @@ while edges.More():
     current_edge = edges.Current()
     shapeAnalysis_firstVertex = ShapeAnalysis_Edge().FirstVertex(current_edge)
     shapeAnalysis_lastVertex = ShapeAnalysis_Edge().LastVertex(current_edge)
-    sA_firstVertex = BRep_Tool().Pnt(shapeAnalysis_firstVertex).Coord()
-    sA_lastVertex = BRep_Tool().Pnt(shapeAnalysis_lastVertex).Coord()
+    firstPoint = BRep_Tool().Pnt(shapeAnalysis_firstVertex)
+    lastPoint = BRep_Tool().Pnt(shapeAnalysis_lastVertex)
 
-    if sA_firstVertex == p3_pnt.Coord() and sA_lastVertex == p3_pnt_extrude.Coord():
-        fillets.Add(fillet_radius, current_edge)
-    elif sA_firstVertex == p4_pnt.Coord() and sA_lastVertex == p4_pnt_extrude.Coord():
-        fillets.Add(fillet_radius, current_edge)
+    print(firstPoint.Coord())
+    print(lastPoint.Coord())
+
+    firstPoint_X = math.trunc(firstPoint.Coord(1) * 1_000_000) / 1_000_000
+    firstPoint_Y = math.trunc(firstPoint.Coord(2) * 1_000_000) / 1_000_000
+    firstPoint_Z = math.trunc(firstPoint.Coord(3) * 1_000_000) / 1_000_000
+    lastPoint_X = math.trunc(lastPoint.Coord(1) * 1_000_000) / 1_000_000
+    lastPoint_Y = math.trunc(lastPoint.Coord(2) * 1_000_000) / 1_000_000
+    lastPoint_Z = math.trunc(lastPoint.Coord(3) * 1_000_000) / 1_000_000
+
+    firstPoint = [firstPoint_X, firstPoint_Y, firstPoint_Z]
+    lastPoint = [lastPoint_X, lastPoint_Y, lastPoint_Z]
+
+    print("First Point: ", firstPoint)
+    print("Last Point: ", lastPoint)
+
+    if firstPoint == p1_pnt_array and lastPoint == p1_pnt_extrude_array:
+        fillets.Add(fillet_radius_top, current_edge)
+    elif firstPoint == p2_pnt_array and lastPoint == p2_pnt_extrude_array:
+        fillets.Add(fillet_radius_top, current_edge)
+    elif firstPoint == p3_pnt_array and lastPoint == p3_pnt_extrude_array:
+        fillets.Add(fillet_radius_base, current_edge)
+    elif firstPoint == p4_pnt_array and lastPoint == p4_pnt_extrude_array:
+        fillets.Add(fillet_radius_base, current_edge)
+
+    # if sA_firstVertex == p3_pnt.Coord() and sA_lastVertex == p3_pnt_extrude.Coord():
+    #     fillets.Add(fillet_radius_base, current_edge)
+    #     print("Found 3")
+    # elif sA_firstVertex == p4_pnt.Coord() and sA_lastVertex == p4_pnt_extrude.Coord():
+    #     fillets.Add(fillet_radius_base, current_edge)
+    #     print("Found 4")
+    # elif sA_firstVertex == p1_pnt.Coord() and sA_lastVertex == p1_pnt_extrude.Coord():
+    #     fillets.Add(fillet_radius_top, current_edge)
+    #     print("Found 1")
+    # elif sA_firstVertex == p2_pnt.Coord() and sA_lastVertex == p2_pnt_extrude.Coord():
+    #     fillets.Add(fillet_radius_top, current_edge)
+    #     print("Found 2")
 
     edges.Next()
+
 
 fillets.Build()
 slot = fillets.Shape()
@@ -181,7 +262,6 @@ stator = BRepAlgoAPI_Cut(stator, fused_slot).Shape()
 # Display shape
 display.DisplayShape(centre_cylinder, update=True)
 display.DisplayShape(stator, update=True)
-
 # display.DisplayShape(slot, update=True)
 
 start_display()
