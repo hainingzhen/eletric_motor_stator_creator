@@ -7,7 +7,7 @@ from OCC.Core.BRepFilletAPI import BRepFilletAPI_MakeFillet
 from OCC.Display.SimpleGui import init_display
 from OCC.Core.TopExp import TopExp_Explorer
 from OCC.Core.BRep import BRep_Tool
-from OCC.Core.TopAbs import (TopAbs_EDGE)
+from OCC.Core.TopAbs import TopAbs_EDGE
 from OCC.Core.ShapeAnalysis import ShapeAnalysis_Edge
 from OCC.Core.BRepBuilderAPI import (BRepBuilderAPI_MakeEdge2d, BRepBuilderAPI_MakeWire,
                                      BRepBuilderAPI_MakeFace, BRepBuilderAPI_Transform,
@@ -15,42 +15,34 @@ from OCC.Core.BRepBuilderAPI import (BRepBuilderAPI_MakeEdge2d, BRepBuilderAPI_M
 
 display, start_display, add_menu, add_function_to_menu = init_display()
 
-centre_cylinder = BRepPrimAPI_MakeCylinder(1, 1).Shape()
-
-# Basic stator dimensions
+# STATOR dimensions
 active_length = 90
-active_length_vec = gp_Vec(0, 0, active_length)
 stator_inner_radius = 80
 stator_outer_radius = 200
 
-stator_inner = BRepPrimAPI_MakeCylinder(stator_inner_radius, active_length).Shape()
-stator_outer = BRepPrimAPI_MakeCylinder(stator_outer_radius, active_length).Shape()
-stator = BRepAlgoAPI_Cut(stator_outer, stator_inner).Shape()
-
-# Basic slot dimensions
+# SLOT & TEETH dimensions
+teeth_width = 12    # Using teeth_width instead of slot top and base widths.
 num_of_slots = 15
 fillet_radius_base = 5
 fillet_radius_top = 2
 slot_opening_depth = 10
+slot_opening_width = 5
 slot_depth = 70
+
 slot_top_radius = stator_inner_radius + slot_opening_depth
 slot_base_radius = slot_top_radius + slot_depth
 slot_top_circumference = 2 * math.pi * slot_top_radius
 slot_base_circumference = 2 * math.pi * slot_base_radius
-
-teeth_width = 12  # Using teeth_width instead of slot top and base widths.
 teeth_angle_top = 2 * math.asin(teeth_width / 2 / slot_top_radius)
 teeth_angle_base = 2 * math.asin(teeth_width / 2 / slot_base_radius)
-
-# Constant slot opening width throughout
-slot_opening_width = 5
+# Constant slot opening width
 slot_opening_top_angle = math.asin(slot_opening_width / 2 / stator_inner_radius)
 slot_opening_base_angle = math.asin(slot_opening_width / 2 / (stator_inner_radius + slot_opening_depth))
 
 teeth_arclength_top = slot_top_circumference * (teeth_angle_top / math.radians(360))
 teeth_arclength_base = slot_base_circumference * (teeth_angle_base / math.radians(360))
 total_teeth_arclength_top = teeth_arclength_top * num_of_slots
-total_teeth_arclength_base = teeth_arclength_base * num_of_slots
+total_teeth_arclength_base = teeth_arclength_base * num_of_slots    
 
 width_slot_top = (slot_top_circumference - total_teeth_arclength_top) / num_of_slots
 width_slot_base = (slot_base_circumference - total_teeth_arclength_base) / num_of_slots
@@ -133,6 +125,8 @@ slot_opening_wire = BRepBuilderAPI_MakeWire(slot_opening_edge_top, slot_opening_
 slot_face = BRepBuilderAPI_MakeFace(slot_wire, True).Face()
 slot_opening_face = BRepBuilderAPI_MakeFace(slot_opening_wire, True).Face()
 
+active_length_vec = gp_Vec(0, 0, active_length)
+
 # Extrude the face
 slot = BRepPrimAPI_MakePrism(slot_face, active_length_vec, False, True)
 slot.Build()
@@ -176,9 +170,6 @@ p2_pnt_extrude_array = [p2_pnt_extrude_X, p2_pnt_extrude_Y, p2_pnt_extrude_Z]
 p3_pnt_extrude_array = [p3_pnt_extrude_X, p3_pnt_extrude_Y, p3_pnt_extrude_Z]
 p4_pnt_extrude_array = [p4_pnt_extrude_X, p4_pnt_extrude_Y, p4_pnt_extrude_Z]
 
-print("Point 1: ", p1_pnt_array)
-print("Point 2: ", p1_pnt_extrude_array)
-
 # Find edge to fillet
 fillets = BRepFilletAPI_MakeFillet(slot)
 edges = TopExp_Explorer(slot, TopAbs_EDGE)
@@ -188,9 +179,6 @@ while edges.More():
     shapeAnalysis_lastVertex = ShapeAnalysis_Edge().LastVertex(current_edge)
     firstPoint = BRep_Tool().Pnt(shapeAnalysis_firstVertex)
     lastPoint = BRep_Tool().Pnt(shapeAnalysis_lastVertex)
-
-    print(firstPoint.Coord())
-    print(lastPoint.Coord())
 
     firstPoint_X = math.trunc(firstPoint.Coord(1) * 1_000_000) / 1_000_000
     firstPoint_Y = math.trunc(firstPoint.Coord(2) * 1_000_000) / 1_000_000
@@ -202,9 +190,6 @@ while edges.More():
     firstPoint = [firstPoint_X, firstPoint_Y, firstPoint_Z]
     lastPoint = [lastPoint_X, lastPoint_Y, lastPoint_Z]
 
-    print("First Point: ", firstPoint)
-    print("Last Point: ", lastPoint)
-
     if firstPoint == p1_pnt_array and lastPoint == p1_pnt_extrude_array:
         fillets.Add(fillet_radius_top, current_edge)
     elif firstPoint == p2_pnt_array and lastPoint == p2_pnt_extrude_array:
@@ -214,25 +199,10 @@ while edges.More():
     elif firstPoint == p4_pnt_array and lastPoint == p4_pnt_extrude_array:
         fillets.Add(fillet_radius_base, current_edge)
 
-    # if sA_firstVertex == p3_pnt.Coord() and sA_lastVertex == p3_pnt_extrude.Coord():
-    #     fillets.Add(fillet_radius_base, current_edge)
-    #     print("Found 3")
-    # elif sA_firstVertex == p4_pnt.Coord() and sA_lastVertex == p4_pnt_extrude.Coord():
-    #     fillets.Add(fillet_radius_base, current_edge)
-    #     print("Found 4")
-    # elif sA_firstVertex == p1_pnt.Coord() and sA_lastVertex == p1_pnt_extrude.Coord():
-    #     fillets.Add(fillet_radius_top, current_edge)
-    #     print("Found 1")
-    # elif sA_firstVertex == p2_pnt.Coord() and sA_lastVertex == p2_pnt_extrude.Coord():
-    #     fillets.Add(fillet_radius_top, current_edge)
-    #     print("Found 2")
-
     edges.Next()
-
 
 fillets.Build()
 slot = fillets.Shape()
-
 slot = BRepAlgoAPI_Fuse(slot_opening, slot).Shape()
 
 # Transformation
@@ -257,6 +227,10 @@ while num_of_box < num_of_slots:
 
     num_of_box += 1
 
+centre_cylinder = BRepPrimAPI_MakeCylinder(1, 1).Shape()
+stator_inner = BRepPrimAPI_MakeCylinder(stator_inner_radius, active_length).Shape()
+stator_outer = BRepPrimAPI_MakeCylinder(stator_outer_radius, active_length).Shape()
+stator = BRepAlgoAPI_Cut(stator_outer, stator_inner).Shape()
 stator = BRepAlgoAPI_Cut(stator, fused_slot).Shape()
 
 # Display shape
