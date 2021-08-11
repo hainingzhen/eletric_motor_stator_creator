@@ -15,6 +15,9 @@ from OCC.Core.BRepBuilderAPI import (BRepBuilderAPI_MakeEdge2d, BRepBuilderAPI_M
 
 display, start_display, add_menu, add_function_to_menu = init_display()
 
+# Slot Bottom Type : "Curved", "Flat"
+slot_type = "Curved"
+
 # STATOR dimensions
 active_length = 90
 stator_inner_radius = 80
@@ -58,7 +61,12 @@ p1 = gp_Pnt2d(math.cos(slot_top_angle) * slot_top_radius,
               math.sin(slot_top_angle) * slot_top_radius)
 p2 = gp_Pnt2d(math.cos(slot_top_angle) * slot_top_radius,
               -(math.sin(slot_top_angle) * slot_top_radius))
+p3 = gp_Pnt2d(math.cos(slot_base_angle) * slot_base_radius,
+              math.sin(slot_base_angle) * slot_base_radius)
+p4 = gp_Pnt2d(math.cos(slot_base_angle) * slot_base_radius,
+              -(math.sin(slot_base_angle) * slot_base_radius))
 pt = gp_Pnt2d(slot_top_radius, 0)
+pb = gp_Pnt2d(slot_base_radius, 0)
 
 # Defining the points for the slot's narrowing opening
 sp1 = gp_Pnt2d(math.cos(slot_opening_top_angle) * stator_inner_radius,
@@ -114,7 +122,11 @@ arc_top = GCE2d_MakeArcOfCircle(p1, pt, p2).Value()
 edge_top = BRepBuilderAPI_MakeEdge2d(arc_top).Edge()
 edge_left = BRepBuilderAPI_MakeEdge2d(v2, v4).Edge()
 edge_right = BRepBuilderAPI_MakeEdge2d(v1, v3).Edge()
-edge_base = BRepBuilderAPI_MakeEdge2d(v3, v4).Edge()
+if slot_type == "Curved":
+    arc_base = GCE2d_MakeArcOfCircle(p3, pb, p4).Value()
+    edge_base = BRepBuilderAPI_MakeEdge2d(arc_base).Edge()
+elif slot_type == "Flat":
+    edge_base = BRepBuilderAPI_MakeEdge2d(v3, v4).Edge()
 slot_opening_arc_top = GCE2d_MakeArcOfCircle(sp1, spt, sp2).Value()
 slot_opening_arc_base = GCE2d_MakeArcOfCircle(sp3, spb, sp4).Value()
 slot_opening_edge_top = BRepBuilderAPI_MakeEdge2d(slot_opening_arc_top).Edge()
