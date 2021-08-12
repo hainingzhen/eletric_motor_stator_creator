@@ -15,6 +15,8 @@ from OCC.Core.BRepBuilderAPI import (BRepBuilderAPI_MakeEdge2d, BRepBuilderAPI_M
 
 display, start_display, add_menu, add_function_to_menu = init_display()
 
+# Stator Type : "Inner", "Outer"
+stator_type = "Outer"
 # Slot Bottom Type : "Curved", "Flat"
 slot_type = "Curved"
 
