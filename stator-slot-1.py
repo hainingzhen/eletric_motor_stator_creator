@@ -21,18 +21,18 @@ stator_type = "Outer"
 slot_type = "Curved"
 
 # STATOR dimensions
-active_length = 90
+active_length = 400
 stator_inner_radius = 80
-stator_outer_radius = 200
+stator_outer_radius = 180
 
 # SLOT & TEETH dimensions
-num_of_slots = 15
-teeth_width = 12    # Using teeth_width instead of slot top and base widths.
-slot_opening_depth = 10
-slot_opening_width = 5  # Constant slot opening width
+num_of_slots = 30
+teeth_width = 8  # Using teeth_width instead of slot top and base widths.
+slot_opening_depth = 3
+slot_opening_width = 2  # Constant slot opening width
 slot_depth = 70
-fillet_radius_base = 5
-fillet_radius_top = 2
+fillet_radius_base = 1
+fillet_radius_top = 1
 
 # Calculating the values necessary to construct the slot.
 # -- slot_top is the edge of the slot toward the centre of the stator, just after slot's narrower opening ends.
@@ -95,6 +95,7 @@ p3_pnt = gp_Pnt(math.cos(slot_base_angle) * slot_base_radius,
 p4_pnt = gp_Pnt(math.cos(slot_base_angle) * slot_base_radius,
                 -(math.sin(slot_base_angle) * slot_base_radius),
                 0)
+
 # The extruded points are for use later to locate edges for fillet (Each pnt is paired up with a pnt_extrude).
 p1_pnt_extrude = gp_Pnt(math.cos(slot_top_angle) * slot_top_radius,
                         math.sin(slot_top_angle) * slot_top_radius,

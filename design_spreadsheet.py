@@ -15,34 +15,57 @@ from OCC.Core.BRepBuilderAPI import (BRepBuilderAPI_MakeEdge2d, BRepBuilderAPI_M
 
 display, start_display, add_menu, add_function_to_menu = init_display()
 
-# Stator Type : "Inner", "Outer"
+outer_diameter = 0.2
+torque = 60
+num_pole_pairs = 2
+num_of_slots = 24
+
+magnetic_loading = 0.8
+electrical_loading = 50_000
+current_density = 3
+design_flux_density = 1.4
+
+coeff_a = ((1 + 2 * num_pole_pairs) / num_pole_pairs ** 2) * \
+          ((magnetic_loading / design_flux_density) ** 2) + \
+          2 * (magnetic_loading / design_flux_density) - 1
+
+coeff_b = (1 + num_pole_pairs) / num_pole_pairs * (magnetic_loading / design_flux_density) + \
+            2 * electrical_loading / (current_density * 10**6) / outer_diameter
+
+split_ratio = (coeff_b-math.sqrt(coeff_b**2 - coeff_a)) / coeff_a
+active_diameter = outer_diameter * split_ratio
+active_length = torque / (math.pi / (2 * math.sqrt(2)) * active_diameter**2 * magnetic_loading * electrical_loading)
+teeth_width = (magnetic_loading / design_flux_density) * (math.pi * active_diameter / num_of_slots) * 1_000
+back_iron_depth = (magnetic_loading / design_flux_density) * (active_diameter / (2 * num_pole_pairs)) * 1_000
+active_slot_area = math.pi * active_diameter * electrical_loading / (num_of_slots * current_density)
+active_length_mm = active_length * 1_000
+active_diameter_mm = active_diameter * 1_000
+outer_diameter_mm = outer_diameter * 1_000
+slot_bottom_diameter = outer_diameter_mm - 2 * back_iron_depth
+stator_inner_radius = active_diameter_mm / 2
+stator_outer_radius = outer_diameter_mm / 2
+
+slot_opening_depth = 5
+slot_opening_width = 10
+fillet_radius_top = 3
+fillet_radius_base = 4
+
+# print("Split Ratio: ", split_ratio)
+# print("Active Diameter: ", active_diameter)
+# print("Active Length: ", active_length)
+# print("Tooth Width: ", teeth_width)
+# print("Back Iron Depth: ", back_iron_depth)
+# print("Active Slot Area: ", active_slot_area)
+# print("Active Diameter: ", active_diameter_mm)
+# print("Slot Bottom Diameter: ", slot_bottom_diameter)
+# print("Outer Diameter: ", outer_diameter_mm)
+
 stator_type = "Outer"
-# Slot Bottom Type : "Curved", "Flat"
-slot_type = "Flat"
-# Slot Fillet Type: "Fillet" , "No Fillet"
+slot_type = "Curved"
 slot_fillet_type = "No Fillet"
 
-# STATOR dimensions
-active_length = 90
-stator_inner_radius = 80
-stator_outer_radius = 200
-
-# SLOT & TEETH dimensions
-num_of_slots = 15
-teeth_width = 15    # Using teeth_width instead of slot top and base widths.
-slot_opening_depth = 5
-slot_opening_width = 10  # Constant slot opening width
-slot_depth = 70
-fillet_radius_base = 5
-fillet_radius_top = 2
-
-# Calculating the values necessary to construct the slot.
-# -- slot_top is the edge of the slot toward the centre of the stator, just after slot's narrower opening ends.
-# -- slot_base is the bottom edge of the slot furthest away from the centre of the stator.
-# Both the radii and circumferences are calculated to find where the end vertices should be.
-# As the teeth widths are constant, the slots width will increase as it extends away from the centre of the stator.
 slot_top_radius = stator_inner_radius + slot_opening_depth
-slot_base_radius = slot_top_radius + slot_depth
+slot_base_radius = slot_bottom_diameter / 2
 slot_top_circumference = 2 * math.pi * slot_top_radius
 slot_base_circumference = 2 * math.pi * slot_base_radius
 teeth_angle_top = 2 * math.asin(teeth_width / 2 / slot_top_radius)
@@ -165,7 +188,7 @@ slot_opening_wire = BRepBuilderAPI_MakeWire(slot_opening_edge_top, slot_opening_
 slot_face = BRepBuilderAPI_MakeFace(slot_wire, True).Face()
 slot_opening_face = BRepBuilderAPI_MakeFace(slot_opening_wire, True).Face()
 
-active_length_vec = gp_Vec(0, 0, active_length)
+active_length_vec = gp_Vec(0, 0, active_length_mm)
 
 # Extrude the face into a solid
 slot = BRepPrimAPI_MakePrism(slot_face, active_length_vec, False, True)
@@ -279,8 +302,8 @@ while num_of_box < num_of_slots:
 
 # Make all of the shapes and combine them accordingly to form the final stator form
 centre_cylinder = BRepPrimAPI_MakeCylinder(1, 1).Shape()
-stator_inner = BRepPrimAPI_MakeCylinder(stator_inner_radius, active_length).Shape()
-stator_outer = BRepPrimAPI_MakeCylinder(stator_outer_radius, active_length).Shape()
+stator_inner = BRepPrimAPI_MakeCylinder(stator_inner_radius, active_length_mm).Shape()
+stator_outer = BRepPrimAPI_MakeCylinder(stator_outer_radius, active_length_mm).Shape()
 stator = BRepAlgoAPI_Cut(stator_outer, stator_inner).Shape()
 stator = BRepAlgoAPI_Cut(stator, fused_slot).Shape()
 
