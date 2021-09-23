@@ -63,6 +63,7 @@ fillet_radius_base = 4
 stator_type = "Outer"
 slot_type = "Curved"
 slot_fillet_type = "No Fillet"
+teeth_feet_type = ""
 
 slot_top_radius = stator_inner_radius + slot_opening_depth
 slot_base_radius = slot_bottom_diameter / 2

@@ -1,6 +1,7 @@
 import math
 from OCC.Core.gp import gp_Pnt, gp_Pnt2d, gp_Vec, gp_Trsf, gp_Ax1
 from OCC.Core.GCE2d import GCE2d_MakeArcOfCircle
+from OCC.Core.GC import GC_MakeArcOfCircle
 from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeCylinder, BRepPrimAPI_MakePrism
 from OCC.Core.BRepAlgoAPI import BRepAlgoAPI_Fuse, BRepAlgoAPI_Cut
 from OCC.Core.BRepFilletAPI import BRepFilletAPI_MakeFillet
@@ -13,14 +14,22 @@ from OCC.Core.BRepBuilderAPI import (BRepBuilderAPI_MakeEdge2d, BRepBuilderAPI_M
                                      BRepBuilderAPI_MakeFace, BRepBuilderAPI_Transform,
                                      BRepBuilderAPI_MakeVertex)
 
+
 display, start_display, add_menu, add_function_to_menu = init_display()
 
+# STATOR PARAMETERS
+#######################################################################################
 # Stator Type : "Inner", "Outer"
 stator_type = "Outer"
+
 # Slot Bottom Type : "Curved", "Flat"
-slot_type = "Flat"
+slot_type = "Curved"
+
 # Slot Fillet Type: "Fillet" , "No Fillet"
 slot_fillet_type = "No Fillet"
+
+# Style of the stator's teeth's feet: "Flat", "Tilt"
+teeth_feet_type = "Flat"
 
 # STATOR dimensions
 active_length = 90
@@ -35,7 +44,10 @@ slot_opening_width = 10  # Constant slot opening width
 slot_depth = 70
 fillet_radius_base = 5
 fillet_radius_top = 2
+#######################################################################################
 
+# CALCULATIONS FOR POINTS LOCATIONS
+#######################################################################################
 # Calculating the values necessary to construct the slot.
 # -- slot_top is the edge of the slot toward the centre of the stator, just after slot's narrower opening ends.
 # -- slot_base is the bottom edge of the slot furthest away from the centre of the stator.
@@ -43,29 +55,50 @@ fillet_radius_top = 2
 # As the teeth widths are constant, the slots width will increase as it extends away from the centre of the stator.
 slot_top_radius = stator_inner_radius + slot_opening_depth
 slot_base_radius = slot_top_radius + slot_depth
+
+# Find the circumference of the entire circle that the slot's top and base rests on
 slot_top_circumference = 2 * math.pi * slot_top_radius
 slot_base_circumference = 2 * math.pi * slot_base_radius
+
+# Find the angle that the teeth requires
 teeth_angle_top = 2 * math.asin(teeth_width / 2 / slot_top_radius)
 teeth_angle_base = 2 * math.asin(teeth_width / 2 / slot_base_radius)
 
-if stator_type == "Inner":
-    slot_opening_top_angle = math.asin(slot_opening_width / 2 / slot_base_radius)
-    slot_opening_base_angle = math.asin(slot_opening_width / 2 / stator_outer_radius)
-elif stator_type == "Outer":
-    slot_opening_top_angle = math.asin(slot_opening_width / 2 / stator_inner_radius)
-    slot_opening_base_angle = math.asin(slot_opening_width / 2 / (stator_inner_radius + slot_opening_depth))
-
+# Find the arc length of the teeth section and then the entire arc length that all of the teeth occupies
 teeth_arclength_top = slot_top_circumference * (teeth_angle_top / math.radians(360))
 teeth_arclength_base = slot_base_circumference * (teeth_angle_base / math.radians(360))
 total_teeth_arclength_top = teeth_arclength_top * num_of_slots
 total_teeth_arclength_base = teeth_arclength_base * num_of_slots
 
+# width_slot_top -- the arc width of one slot's top
+# width_slot_base -- the arc width of one slot's base
 width_slot_top = (slot_top_circumference - total_teeth_arclength_top) / num_of_slots
 width_slot_base = (slot_base_circumference - total_teeth_arclength_base) / num_of_slots
-slot_top_angle = math.radians(360 * (0.5 * width_slot_top / (2 * math.pi * slot_top_radius)))
-slot_base_angle = math.radians(360 * (0.5 * width_slot_base / (2 * math.pi * slot_base_radius)))
 
-# Defining the points for slot's top edge/arc
+# slot_top_angle -- the angle of half of the slot's top to its centre
+# slot_base_angle -- the angle of half of the slot's base to its centre
+slot_top_angle = math.radians(360 * (0.5 * width_slot_top / slot_top_circumference))
+slot_base_angle = math.radians(360 * (0.5 * width_slot_base / slot_base_circumference))
+
+# print(slot_top_radius)
+# print(slot_base_radius)
+# print(slot_top_circumference)
+# print(slot_base_circumference)
+# print(teeth_angle_top)
+# print(teeth_angle_base)
+# print(teeth_arclength_top)
+# print(teeth_arclength_base)
+# print(total_teeth_arclength_top)
+# print(total_teeth_arclength_base)
+# print(width_slot_top)
+# print(width_slot_base)
+# print(slot_top_angle)
+# print(slot_base_angle)
+#######################################################################################
+
+# SLOT POINTS
+#######################################################################################
+# Defining the points for slot's top edge/arc (2d)
 p1 = gp_Pnt2d(math.cos(slot_top_angle) * slot_top_radius,
               math.sin(slot_top_angle) * slot_top_radius)
 p2 = gp_Pnt2d(math.cos(slot_top_angle) * slot_top_radius,
@@ -77,31 +110,7 @@ p4 = gp_Pnt2d(math.cos(slot_base_angle) * slot_base_radius,
 pt = gp_Pnt2d(slot_top_radius, 0)
 pb = gp_Pnt2d(slot_base_radius, 0)
 
-# Defining the points for the slot's narrowing opening
-if stator_type == "Inner":
-    sp1 = gp_Pnt2d(math.cos(slot_opening_top_angle) * slot_base_radius,
-                   math.sin(slot_opening_top_angle) * slot_base_radius)
-    sp2 = gp_Pnt2d(math.cos(slot_opening_top_angle) * slot_base_radius,
-                   -(math.sin(slot_opening_top_angle) * slot_base_radius))
-    sp3 = gp_Pnt2d(math.cos(slot_opening_base_angle) * stator_outer_radius,
-                   math.sin(slot_opening_base_angle) * stator_outer_radius)
-    sp4 = gp_Pnt2d(math.cos(slot_opening_base_angle) * stator_outer_radius,
-                   -(math.sin(slot_opening_base_angle) * stator_outer_radius))
-    spt = gp_Pnt2d(slot_base_radius, 0)
-    spb = gp_Pnt2d(stator_outer_radius, 0)
-elif stator_type == "Outer":
-    sp1 = gp_Pnt2d(math.cos(slot_opening_top_angle) * stator_inner_radius,
-                   math.sin(slot_opening_top_angle) * stator_inner_radius)
-    sp2 = gp_Pnt2d(math.cos(slot_opening_top_angle) * stator_inner_radius,
-                   -(math.sin(slot_opening_top_angle) * stator_inner_radius))
-    sp3 = gp_Pnt2d(math.cos(slot_opening_base_angle) * (stator_inner_radius + slot_opening_depth),
-                   math.sin(slot_opening_base_angle) * (stator_inner_radius + slot_opening_depth))
-    sp4 = gp_Pnt2d(math.cos(slot_opening_base_angle) * (stator_inner_radius + slot_opening_depth),
-                   -(math.sin(slot_opening_base_angle) * (stator_inner_radius + slot_opening_depth)))
-    spt = gp_Pnt2d(stator_inner_radius, 0)
-    spb = gp_Pnt2d(stator_inner_radius + slot_opening_depth, 0)
-
-# Defining points (gp_Pnt) for creating the slot.
+# Defining points for creating the slot. (3d)
 p1_pnt = gp_Pnt(math.cos(slot_top_angle) * slot_top_radius,
                 math.sin(slot_top_angle) * slot_top_radius,
                 0)
@@ -114,6 +123,37 @@ p3_pnt = gp_Pnt(math.cos(slot_base_angle) * slot_base_radius,
 p4_pnt = gp_Pnt(math.cos(slot_base_angle) * slot_base_radius,
                 -(math.sin(slot_base_angle) * slot_base_radius),
                 0)
+pt_pnt = gp_Pnt(slot_top_radius, 0, 0)
+pb_pnt = gp_Pnt(slot_base_radius, 0, 0)
+#######################################################################################
+
+# Defining the points for the slot's narrowing opening
+if stator_type == "Inner":
+    slot_opening_top_angle = math.asin(slot_opening_width / 2 / slot_base_radius)
+    slot_opening_base_angle = math.asin(slot_opening_width / 2 / stator_outer_radius)
+    sp1 = gp_Pnt2d(math.cos(slot_opening_top_angle) * slot_base_radius,
+                   math.sin(slot_opening_top_angle) * slot_base_radius)
+    sp2 = gp_Pnt2d(math.cos(slot_opening_top_angle) * slot_base_radius,
+                   -(math.sin(slot_opening_top_angle) * slot_base_radius))
+    sp3 = gp_Pnt2d(math.cos(slot_opening_base_angle) * stator_outer_radius,
+                   math.sin(slot_opening_base_angle) * stator_outer_radius)
+    sp4 = gp_Pnt2d(math.cos(slot_opening_base_angle) * stator_outer_radius,
+                   -(math.sin(slot_opening_base_angle) * stator_outer_radius))
+    spt = gp_Pnt2d(slot_base_radius, 0)
+    spb = gp_Pnt2d(stator_outer_radius, 0)
+elif stator_type == "Outer":
+    slot_opening_top_angle = math.asin(slot_opening_width / 2 / stator_inner_radius)
+    slot_opening_base_angle = math.asin(slot_opening_width / 2 / (stator_inner_radius + slot_opening_depth))
+    sp1 = gp_Pnt2d(math.cos(slot_opening_top_angle) * stator_inner_radius,
+                   math.sin(slot_opening_top_angle) * stator_inner_radius)
+    sp2 = gp_Pnt2d(math.cos(slot_opening_top_angle) * stator_inner_radius,
+                   -(math.sin(slot_opening_top_angle) * stator_inner_radius))
+    sp3 = gp_Pnt2d(math.cos(slot_opening_base_angle) * (stator_inner_radius + slot_opening_depth),
+                   math.sin(slot_opening_base_angle) * (stator_inner_radius + slot_opening_depth))
+    sp4 = gp_Pnt2d(math.cos(slot_opening_base_angle) * (stator_inner_radius + slot_opening_depth),
+                   -(math.sin(slot_opening_base_angle) * (stator_inner_radius + slot_opening_depth)))
+    spt = gp_Pnt2d(stator_inner_radius, 0)
+    spb = gp_Pnt2d(stator_inner_radius + slot_opening_depth, 0)
 
 # The extruded points are for use later to locate edges for fillet (Each pnt is paired up with a pnt_extrude).
 p1_pnt_extrude = gp_Pnt(math.cos(slot_top_angle) * slot_top_radius,
@@ -130,10 +170,6 @@ p4_pnt_extrude = gp_Pnt(math.cos(slot_base_angle) * slot_base_radius,
                         active_length)
 
 # Converting the fillet points from above to vertex class type (Each v pairs up with v_extrude)
-v1 = BRepBuilderAPI_MakeVertex(p1_pnt).Vertex()
-v2 = BRepBuilderAPI_MakeVertex(p2_pnt).Vertex()
-v3 = BRepBuilderAPI_MakeVertex(p3_pnt).Vertex()
-v4 = BRepBuilderAPI_MakeVertex(p4_pnt).Vertex()
 v1_extrude = BRepBuilderAPI_MakeVertex(p1_pnt_extrude).Vertex()
 v2_extrude = BRepBuilderAPI_MakeVertex(p2_pnt_extrude).Vertex()
 v3_extrude = BRepBuilderAPI_MakeVertex(p3_pnt_extrude).Vertex()
@@ -142,13 +178,13 @@ v4_extrude = BRepBuilderAPI_MakeVertex(p4_pnt_extrude).Vertex()
 # Creating the edges from the vertex
 arc_top = GCE2d_MakeArcOfCircle(p1, pt, p2).Value()
 edge_top = BRepBuilderAPI_MakeEdge2d(arc_top).Edge()
-edge_left = BRepBuilderAPI_MakeEdge2d(v2, v4).Edge()
-edge_right = BRepBuilderAPI_MakeEdge2d(v1, v3).Edge()
+edge_left = BRepBuilderAPI_MakeEdge2d(p2, p4).Edge()
+edge_right = BRepBuilderAPI_MakeEdge2d(p1, p3).Edge()
 if slot_type == "Curved":
     arc_base = GCE2d_MakeArcOfCircle(p3, pb, p4).Value()
     edge_base = BRepBuilderAPI_MakeEdge2d(arc_base).Edge()
 elif slot_type == "Flat":
-    edge_base = BRepBuilderAPI_MakeEdge2d(v3, v4).Edge()
+    edge_base = BRepBuilderAPI_MakeEdge2d(p3, p4).Edge()
 slot_opening_arc_top = GCE2d_MakeArcOfCircle(sp1, spt, sp2).Value()
 slot_opening_arc_base = GCE2d_MakeArcOfCircle(sp3, spb, sp4).Value()
 slot_opening_edge_top = BRepBuilderAPI_MakeEdge2d(slot_opening_arc_top).Edge()
