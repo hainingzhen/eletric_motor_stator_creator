@@ -291,7 +291,7 @@ if slot_fillet_type == "Fillet":
 slot = BRepAlgoAPI_Fuse(slot_opening, slot).Shape()
 
 # Transformation declarations
-trns = gp_Trsf()
+# trns = gp_Trsf()
 rot = gp_Trsf()
 
 # While loop for repeating the edges about the origin

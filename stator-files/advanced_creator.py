@@ -19,15 +19,16 @@ from calculate import Calculate
 class AdvancedStatorCreator:
 
     def __init__(self):
-        # Stator Type : "Inner", "Outer"
+        # Stator Type : [["Inner", "Outer"]]
         stator_type = "Outer"
-        # Slot Bottom Type : "Curved", "Flat"
+        # Slot Bottom Type : [["Curved", "Flat"]]
         slot_type = "Flat"
-        # Slot Fillet Type: "Fillet" , "No Fillet"
+        # Slot Fillet Type: [["Fillet" , "No Fillet"]]
         slot_fillet_type = "No Fillet"
-        # Style of the stator's teeth's feet: "Flat", "Tilt"
+        # Style of the stator's teeth's feet: [["Flat", "Tilt" ,"No Feet"]]
         teeth_feet_type = "Flat"
 
+        # Original Material
         active_length = 90
         stator_inner_radius = 80
         stator_outer_radius = 200
@@ -56,23 +57,33 @@ class AdvancedStatorCreator:
                       "fillet_radius_top": fillet_radius_top,
                       }
 
-    def makeStator(self):
+    def makeBase(self):
+        inner_cut = BRepPrimAPI_MakeCylinder(self.input["stator_inner_radius"], self.input["active_length"]).Shape()
+        base = BRepPrimAPI_MakeCylinder(self.input["stator_outer_radius"], self.input["active_length"]).Shape()
+        return BRepAlgoAPI_Cut(base, inner_cut).Shape()
+
+    def makeSlots(self):
         calc = Calculate(self.input)
         err = calc.errorChecking()
         if err is not None:
-            return
-        calc.makeSlot()
+            print("Error Msg: ", err)
+            return err
+        return calc.makeSlots()
 
-    def makeStator(self):
-        centre_cylinder = BRepPrimAPI_MakeCylinder(10, 10).Shape()
-        return centre_cylinder
+    def assemble(self, slots, base):
+        return BRepAlgoAPI_Cut(base, slots).Shape()
 
 
+# This should be called by the PyQt5 code
 def main():
+    advStatorCreator = AdvancedStatorCreator()
+    base = advStatorCreator.makeBase()
+    slots = advStatorCreator.makeSlots()
+    if isinstance(slots, str):
+        return slots
+    stator = advStatorCreator.assemble(slots, base)
+
     display, start_display, add_menu, add_function_to_menu = init_display()
-    stator = AdvancedStatorCreator()
-    stator.makeShapes()
-    stator = stator.makeStator()
     display.DisplayShape(stator, update=True)
     start_display()
 
