@@ -111,20 +111,12 @@ pt = gp_Pnt2d(slot_top_radius, 0)
 pb = gp_Pnt2d(slot_base_radius, 0)
 
 # Defining points for creating the slot. (3d)
-p1_pnt = gp_Pnt(math.cos(slot_top_angle) * slot_top_radius,
-                math.sin(slot_top_angle) * slot_top_radius,
-                0)
-p2_pnt = gp_Pnt(math.cos(slot_top_angle) * slot_top_radius,
-                -(math.sin(slot_top_angle) * slot_top_radius),
-                0)
-p3_pnt = gp_Pnt(math.cos(slot_base_angle) * slot_base_radius,
-                math.sin(slot_base_angle) * slot_base_radius,
-                0)
-p4_pnt = gp_Pnt(math.cos(slot_base_angle) * slot_base_radius,
-                -(math.sin(slot_base_angle) * slot_base_radius),
-                0)
-pt_pnt = gp_Pnt(slot_top_radius, 0, 0)
-pb_pnt = gp_Pnt(slot_base_radius, 0, 0)
+p1_pnt = gp_Pnt(p1.Coord(1), p1.Coord(2), 0)
+p2_pnt = gp_Pnt(p2.Coord(1), p2.Coord(2), 0)
+p3_pnt = gp_Pnt(p3.Coord(1), p3.Coord(2), 0)
+p4_pnt = gp_Pnt(p4.Coord(1), p4.Coord(2), 0)
+pt_pnt = gp_Pnt(pt.Coord(1), 0, 0)
+pb_pnt = gp_Pnt(pb.Coord(1), 0, 0)
 #######################################################################################
 
 # Defining the points for the slot's narrowing opening

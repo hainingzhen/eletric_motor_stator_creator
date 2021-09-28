@@ -14,6 +14,7 @@ from OCC.Core.BRepBuilderAPI import (BRepBuilderAPI_MakeEdge2d, BRepBuilderAPI_M
                                      BRepBuilderAPI_MakeVertex)
 
 from calculate import Calculate
+from slots_builder import SlotsBuilder
 
 
 class AdvancedStatorCreator:
@@ -27,14 +28,18 @@ class AdvancedStatorCreator:
         slot_fillet_type = "No Fillet"
         # Style of the stator's teeth's feet: [["Flat", "Tilt" ,"No Feet"]]
         teeth_feet_type = "Flat"
+        # Teeth type : [["Constant", "Expanding", "Manual"]]
+        teeth_width_type = "Constant"
 
         # Original Material
         active_length = 90
         stator_inner_radius = 80
         stator_outer_radius = 200
 
-        num_of_slots = 15
+        num_of_slots = 14
         teeth_width = 15  # Using teeth_width instead of slot top and base widths.
+        inner_teeth_width = 15
+        outer_teeth_width = 50
         slot_opening_depth = 5
         slot_opening_width = 10  # Constant slot opening width
         slot_depth = 70
@@ -45,11 +50,14 @@ class AdvancedStatorCreator:
                       "slot_type": slot_type,
                       "slot_fillet_type": slot_fillet_type,
                       "teeth_feet_type": teeth_feet_type,
+                      "teeth_width_type": teeth_width_type,
                       "active_length": active_length,
                       "stator_inner_radius": stator_inner_radius,
                       "stator_outer_radius": stator_outer_radius,
                       "num_of_slots": num_of_slots,
                       "teeth_width": teeth_width,
+                      "inner_teeth_width": inner_teeth_width,
+                      "outer_teeth_width": outer_teeth_width,
                       "slot_opening_depth": slot_opening_depth,
                       "slot_opening_width": slot_opening_width,
                       "slot_depth": slot_depth,
@@ -64,13 +72,14 @@ class AdvancedStatorCreator:
 
     def makeSlots(self):
         calc = Calculate(self.input)
-        err = calc.errorChecking()
+        err = calc.check()
         if err is not None:
             print("Error Msg: ", err)
             return err
-        return calc.makeSlots()
+        sb = SlotsBuilder(calc.calcResult, self.input)
+        return sb.makeSlots()
 
-    def assemble(self, slots, base):
+    def makeStator(self, slots, base):
         return BRepAlgoAPI_Cut(base, slots).Shape()
 
 
@@ -81,8 +90,9 @@ def main():
     slots = advStatorCreator.makeSlots()
     if isinstance(slots, str):
         return slots
-    stator = advStatorCreator.assemble(slots, base)
+    stator = advStatorCreator.makeStator(slots, base)
 
+    # Display the stator if its made
     display, start_display, add_menu, add_function_to_menu = init_display()
     display.DisplayShape(stator, update=True)
     start_display()
