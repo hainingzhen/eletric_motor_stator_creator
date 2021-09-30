@@ -1,5 +1,4 @@
 import math
-from error_check import ErrorCheck
 
 
 class Calculate:
@@ -26,21 +25,14 @@ class Calculate:
         width_slot_base = (slot_base_circumference - total_teeth_arclength_base) / self.input["num_of_slots"]
         slot_top_angle = math.radians(360 * (0.5 * width_slot_top / slot_top_circumference))
         slot_base_angle = math.radians(360 * (0.5 * width_slot_base / slot_base_circumference))
-
-        print("slot_top_radius: ", slot_top_radius)
-        print("slot_base_radius: ", slot_base_radius)
-        print("slot_top_circumference: ", slot_top_circumference)
-        print("slot_base_circumference: ", slot_base_circumference)
-        print("teeth_angle_top: ", teeth_angle_top)
-        print("teeth_angle_base: ", teeth_angle_base)
-        print("teeth_arclength_top: ", teeth_arclength_top)
-        print("teeth_arclength_base: ", teeth_arclength_base)
-        print("total_teeth_arclength_top: ", total_teeth_arclength_top)
-        print("total_teeth_arclength_base: ", total_teeth_arclength_base)
-        print("width_slot_top: ", width_slot_top)
-        print("width_slot_base: ", width_slot_base)
-        print("slot_top_angle: ", slot_top_angle)
-        print("slot_base_angle: ", slot_base_angle)
+        if input["stator_type"] == "Inner":
+            hyp_top = slot_base_radius
+            hyp_base = input["stator_outer_radius"]
+        else:
+            hyp_top = input["stator_inner_radius"]
+            hyp_base = hyp_top + input["slot_opening_depth"]
+        slot_opening_top_angle = math.asin(input["slot_opening_width"] / 2 / hyp_top)
+        slot_opening_base_angle = math.asin(input["slot_opening_width"] / 2 / hyp_base)
 
         self.calcResult = {
             "slot_top_radius": slot_top_radius,
@@ -57,14 +49,16 @@ class Calculate:
             "width_slot_base": width_slot_base,
             "slot_top_angle": slot_top_angle,
             "slot_base_angle": slot_base_angle,
+            "hyp_top": hyp_top,
+            "hyp_base": hyp_base,
+            "slot_opening_top_angle": slot_opening_top_angle,
+            "slot_opening_base_angle": slot_opening_base_angle,
         }
 
     def check(self):
-        if self.calcResult["width_slot_top"] <= 0:
-            return "Inner slot edge has no width!"
-        if self.calcResult["width_slot_base"] <= 0:
-            return "Outer slot edge has no width! Check manual inputs."
-
-
+        if self.calcResult["width_slot_top"] <= 0.5:
+            return "Inner slot edge has width below 0.5mm!"
+        if self.calcResult["width_slot_base"] <= 0.5:
+            return "Outer slot edge has width below 0.5mm! Check manual inputs."
         return None
 

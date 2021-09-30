@@ -29,7 +29,7 @@ class AdvancedStatorCreator:
         # Style of the stator's teeth's feet: [["Flat", "Tilt" ,"No Feet"]]
         teeth_feet_type = "Flat"
         # Teeth type : [["Constant", "Expanding", "Manual"]]
-        teeth_width_type = "Constant"
+        teeth_width_type = "Manual"
 
         # Original Material
         active_length = 90
@@ -39,7 +39,7 @@ class AdvancedStatorCreator:
         num_of_slots = 14
         teeth_width = 15  # Using teeth_width instead of slot top and base widths.
         inner_teeth_width = 15
-        outer_teeth_width = 50
+        outer_teeth_width = 20
         slot_opening_depth = 5
         slot_opening_width = 10  # Constant slot opening width
         slot_depth = 70
@@ -52,6 +52,7 @@ class AdvancedStatorCreator:
                       "teeth_feet_type": teeth_feet_type,
                       "teeth_width_type": teeth_width_type,
                       "active_length": active_length,
+                      "active_length_vec": gp_Vec(0, 0, active_length),
                       "stator_inner_radius": stator_inner_radius,
                       "stator_outer_radius": stator_outer_radius,
                       "num_of_slots": num_of_slots,
@@ -77,7 +78,7 @@ class AdvancedStatorCreator:
             print("Error Msg: ", err)
             return err
         sb = SlotsBuilder(calc.calcResult, self.input)
-        return sb.makeSlots()
+        return sb.makeSlot()
 
     def makeStator(self, slots, base):
         return BRepAlgoAPI_Cut(base, slots).Shape()
@@ -85,12 +86,12 @@ class AdvancedStatorCreator:
 
 # This should be called by the PyQt5 code
 def main():
-    advStatorCreator = AdvancedStatorCreator()
-    base = advStatorCreator.makeBase()
-    slots = advStatorCreator.makeSlots()
+    asc = AdvancedStatorCreator()
+    base = asc.makeBase()
+    slots = asc.makeSlots()
     if isinstance(slots, str):
         return slots
-    stator = advStatorCreator.makeStator(slots, base)
+    stator = asc.makeStator(slots, base)
 
     # Display the stator if its made
     display, start_display, add_menu, add_function_to_menu = init_display()
