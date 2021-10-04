@@ -23,7 +23,7 @@ class AdvancedStatorCreator:
         # Stator Type : [["Inner", "Outer"]]
         stator_type = "Outer"
         # Slot Bottom Type : [["Curved", "Flat"]]
-        slot_type = "Flat"
+        slot_type = "Curved"
         # Slot Fillet Type: [["Fillet" , "No Fillet"]]
         slot_fillet_type = "No Fillet"
         # Style of the stator's teeth's feet: [["Flat", "Tilt" ,"No Feet"]]
@@ -39,7 +39,7 @@ class AdvancedStatorCreator:
         num_of_slots = 14
         teeth_width = 15  # Using teeth_width instead of slot top and base widths.
         inner_teeth_width = 15
-        outer_teeth_width = 20
+        outer_teeth_width = 30
         slot_opening_depth = 5
         slot_opening_width = 10  # Constant slot opening width
         slot_depth = 70

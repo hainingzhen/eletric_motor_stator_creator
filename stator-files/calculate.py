@@ -1,58 +1,84 @@
-import math
+from math import pi, asin, radians
+from OCC.Core.gp import gp_Pnt, gp_Vec
 
 
 class Calculate:
 
     def __init__(self, input):
         self.input = input
-        slot_top_radius = self.input["stator_inner_radius"] + self.input["slot_opening_depth"]
-        slot_base_radius = slot_top_radius + self.input["slot_depth"]
-        slot_top_circumference = 2 * math.pi * slot_top_radius
-        slot_base_circumference = 2 * math.pi * slot_base_radius
-        teeth_angle_top = 2 * math.asin(self.input["teeth_width"] / 2 / slot_top_radius)
-        if self.input["teeth_width_type"] == "Expanding":
-            teeth_angle_base = teeth_angle_top
-        elif self.input["teeth_width_type"] == "Manual":
-            teeth_angle_top = 2 * math.asin(self.input["inner_teeth_width"] / 2 / slot_top_radius)
-            teeth_angle_base = 2 * math.asin(self.input["outer_teeth_width"] / 2 / slot_base_radius)
-        else:
-            teeth_angle_base = 2 * math.asin(self.input["teeth_width"] / 2 / slot_base_radius)
-        teeth_arclength_top = slot_top_circumference * (teeth_angle_top / math.radians(360))
-        teeth_arclength_base = slot_base_circumference * (teeth_angle_base / math.radians(360))
-        total_teeth_arclength_top = teeth_arclength_top * self.input["num_of_slots"]
-        total_teeth_arclength_base = teeth_arclength_base * self.input["num_of_slots"]
-        width_slot_top = (slot_top_circumference - total_teeth_arclength_top) / self.input["num_of_slots"]
-        width_slot_base = (slot_base_circumference - total_teeth_arclength_base) / self.input["num_of_slots"]
-        slot_top_angle = math.radians(360 * (0.5 * width_slot_top / slot_top_circumference))
-        slot_base_angle = math.radians(360 * (0.5 * width_slot_base / slot_base_circumference))
-        if input["stator_type"] == "Inner":
-            hyp_top = slot_base_radius
-            hyp_base = input["stator_outer_radius"]
-        else:
-            hyp_top = input["stator_inner_radius"]
-            hyp_base = hyp_top + input["slot_opening_depth"]
-        slot_opening_top_angle = math.asin(input["slot_opening_width"] / 2 / hyp_top)
-        slot_opening_base_angle = math.asin(input["slot_opening_width"] / 2 / hyp_base)
+        self.calcResult = self.calculate()
 
-        self.calcResult = {
-            "slot_top_radius": slot_top_radius,
-            "slot_base_radius": slot_base_radius,
-            "slot_top_circumference": slot_top_circumference,
-            "slot_base_circumference": slot_base_circumference,
-            "teeth_angle_top": teeth_angle_top,
-            "teeth_angle_base": teeth_angle_base,
-            "teeth_arclength_top": teeth_arclength_top,
-            "teeth_arclength_base": teeth_arclength_base,
-            "total_teeth_arclength_top": total_teeth_arclength_top,
-            "total_teeth_arclength_base": total_teeth_arclength_base,
-            "width_slot_top": width_slot_top,
-            "width_slot_base": width_slot_base,
-            "slot_top_angle": slot_top_angle,
-            "slot_base_angle": slot_base_angle,
-            "hyp_top": hyp_top,
-            "hyp_base": hyp_base,
-            "slot_opening_top_angle": slot_opening_top_angle,
-            "slot_opening_base_angle": slot_opening_base_angle,
+    def calculate(self):
+
+        if self.input["stator_type"] == "Outer":
+            inner_radius = self.input["stator_inner_radius"]
+            outer_radius = inner_radius + self.input["slot_depth"]
+            mid_radius = inner_radius + self.input["slot_opening_depth"]
+        else:
+            inner_radius = self.input["stator_outer_radius"] - self.input["slot_depth"]
+            outer_radius = self.input["stator_outer_radius"]
+            mid_radius = outer_radius - self.input["slot_opening_depth"]
+        inner_circumference = 2 * pi * inner_radius
+        outer_circumference = 2 * pi * outer_radius
+        mid_circumference = 2 * pi * mid_radius
+
+        if self.input["teeth_width_type"] == "Expanding":
+            teeth_angle_inner = 2 * asin(self.input["teeth_width"] / 2 / inner_radius)
+            teeth_angle_mid = teeth_angle_inner
+            teeth_angle_outer = teeth_angle_inner
+        elif self.input["teeth_width_type"] == "Manual":
+            teeth_angle_inner = 2 * asin(self.input["inner_teeth_width"] / 2 / inner_radius)
+            teeth_angle_outer = 2 * asin(self.input["outer_teeth_width"] / 2 / outer_radius)
+            percentage = (mid_radius - inner_radius) / (outer_radius - inner_radius)
+            teeth_angle_mid = teeth_angle_inner + percentage * (teeth_angle_outer - teeth_angle_inner)
+        else:
+            teeth_angle_inner = 2 * asin(self.input["teeth_width"] / 2 / inner_radius)
+            teeth_angle_outer = 2 * asin(self.input["teeth_width"] / 2 / outer_radius)
+            teeth_angle_mid = 2 * asin(self.input["teeth_width"] / 2 / mid_radius)
+
+        teeth_arclength_inner = inner_circumference * (teeth_angle_inner / radians(360))
+        teeth_arclength_outer = outer_circumference * (teeth_angle_outer / radians(360))
+        teeth_arclength_mid = mid_circumference * (teeth_angle_mid / radians(360))
+        total_teeth_arclength_inner = teeth_arclength_inner * self.input["num_of_slots"]
+        total_teeth_arclength_outer = teeth_arclength_outer * self.input["num_of_slots"]
+        total_teeth_arclength_mid = teeth_arclength_mid * self.input["num_of_slots"]
+        slot_arclength_inner = (inner_circumference - total_teeth_arclength_inner) / self.input["num_of_slots"]
+        slot_arclength_outer = (outer_circumference - total_teeth_arclength_outer) / self.input["num_of_slots"]
+        slot_arclength_mid = (mid_circumference - total_teeth_arclength_mid) / self.input["num_of_slots"]
+        slot_inner_angle = radians(360 * (0.5 * slot_arclength_inner / inner_circumference))
+        slot_outer_angle = radians(360 * (0.5 * slot_arclength_outer / outer_circumference))
+        slot_mid_angle = radians(360 * (0.5 * slot_arclength_mid / mid_circumference))
+
+        # if self.input["stator_type"] == "Inner":
+        #     hyp_top = outer_radius
+        #     hyp_base = self.input["stator_outer_radius"]
+        # else:
+        #     hyp_top = self.input["stator_inner_radius"]
+        #     hyp_base = hyp_top + self.input["slot_opening_depth"]
+        # slot_opening_top_angle = math.asin(self.input["slot_opening_width"] / 2 / hyp_top)
+        # slot_opening_base_angle = math.asin(self.input["slot_opening_width"] / 2 / hyp_base)
+
+        return {
+            "inner_radius": inner_radius,
+            "outer_radius": outer_radius,
+            "mid_radius": mid_radius,
+            "inner_circumference": inner_circumference,
+            "outer_circumference": outer_circumference,
+            "teeth_angle_inner": teeth_angle_inner,
+            "teeth_angle_outer": teeth_angle_outer,
+            "teeth_angle_mid": teeth_angle_mid,
+            "teeth_arclength_inner": teeth_arclength_inner,
+            "teeth_arclength_outer": teeth_arclength_outer,
+            "teeth_arclength_mid": teeth_arclength_mid,
+            "total_teeth_arclength_inner": total_teeth_arclength_inner,
+            "total_teeth_arclength_outer": total_teeth_arclength_outer,
+            "total_teeth_arclength_mid": total_teeth_arclength_mid,
+            "slot_arclength_inner": slot_arclength_inner,
+            "slot_arclength_outer": slot_arclength_outer,
+            "slot_arclength_mid": slot_arclength_mid,
+            "slot_inner_angle": slot_inner_angle,
+            "slot_outer_angle": slot_outer_angle,
+            "slot_mid_angle": slot_mid_angle,
         }
 
     def check(self):
@@ -62,3 +88,5 @@ class Calculate:
             return "Outer slot edge has width below 0.5mm! Check manual inputs."
         return None
 
+    def points(self):
+        pass

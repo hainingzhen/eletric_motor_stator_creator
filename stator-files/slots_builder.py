@@ -55,14 +55,15 @@ class SlotsBuilder:
         slot = BRepPrimAPI_MakePrism(slot_face, self.input["active_length_vec"], False, True)
         slot.Build()
         slot = slot.Shape()
-        slot_opening = self.makeSlotOpening()
+        slot_opening = self.makeFlatSlotOpening()
         slot = BRepAlgoAPI_Fuse(slot, slot_opening).Shape()
         return self.makeMultiple(slot)
 
-    def makeSlotOpening(self):
-        slot_opening_arc_top = GCE2d_MakeArcOfCircle(self.sp1, self.spt, self.sp2).Value()
+    def makeFlatSlotOpening(self):
+        # slot_opening_arc_top = GCE2d_MakeArcOfCircle(self.sp1, self.spt, self.sp2).Value()
         slot_opening_arc_base = GCE2d_MakeArcOfCircle(self.sp3, self.spb, self.sp4).Value()
-        slot_opening_edge_top = BRepBuilderAPI_MakeEdge2d(slot_opening_arc_top).Edge()
+        # slot_opening_edge_top = BRepBuilderAPI_MakeEdge2d(slot_opening_arc_top).Edge()
+        slot_opening_edge_top = BRepBuilderAPI_MakeEdge2d(self.sp1, self.sp2).Edge()
         slot_opening_edge_base = BRepBuilderAPI_MakeEdge2d(slot_opening_arc_base).Edge()
         slot_opening_edge_left = BRepBuilderAPI_MakeEdge2d(self.sp2, self.sp4).Edge()
         slot_opening_edge_right = BRepBuilderAPI_MakeEdge2d(self.sp1, self.sp3).Edge()
@@ -72,6 +73,10 @@ class SlotsBuilder:
         slot_opening = BRepPrimAPI_MakePrism(slot_opening_face, self.input["active_length_vec"], False, True)
         slot_opening.Build()
         return slot_opening.Shape()
+
+    def makeTiltSlotOpening(self):
+
+        pass
 
     def fillet(self, slot):
 
