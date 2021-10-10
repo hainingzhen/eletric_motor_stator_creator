@@ -312,9 +312,16 @@ stator_outer = BRepPrimAPI_MakeCylinder(stator_outer_radius, active_length).Shap
 stator = BRepAlgoAPI_Cut(stator_outer, stator_inner).Shape()
 stator = BRepAlgoAPI_Cut(stator, fused_slot).Shape()
 
+# test_p1 = gp_Pnt2d(300, 0)
+# test_pm = gp_Pnt2d(0, 0)
+# test_p2 = gp_Pnt2d(-300, 0)
+# test_arc = GCE2d_MakeArcOfCircle(test_p1, test_pm, test_p2).Value()
+# test_edge = BRepBuilderAPI_MakeEdge2d(test_arc).Edge()
+
 # Display shape
 # display.DisplayShape(centre_cylinder, update=True)
 display.DisplayShape(stator, update=True)
+display.DisplayShape(test_edge, update=True)
 # display.DisplayShape(slot, update=True)
 
 start_display()

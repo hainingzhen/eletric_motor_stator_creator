@@ -21,7 +21,7 @@ class AdvancedStatorCreator:
 
     def __init__(self):
         # Stator Type : [["Inner", "Outer"]]
-        stator_type = "Outer"
+        stator_type = "Inner"
         # Slot Bottom Type : [["Curved", "Flat"]]
         slot_type = "Curved"
         # Slot Fillet Type: [["Fillet" , "No Fillet"]]
@@ -77,7 +77,8 @@ class AdvancedStatorCreator:
         if err is not None:
             print("Error Msg: ", err)
             return err
-        sb = SlotsBuilder(calc.calcResult, self.input)
+        points = calc.points()
+        sb = SlotsBuilder(points, self.input)
         return sb.makeSlot()
 
     def makeStator(self, slots, base):
