@@ -9,9 +9,8 @@ from OCC.Core.BRepBuilderAPI import (BRepBuilderAPI_MakeEdge2d, BRepBuilderAPI_M
 
 class SlotsBuilder:
 
-    def __init__(self, points, input):
+    def __init__(self, input):
         self.input = input
-        self.points = points
 
         # self.p1_2d = gp_Pnt2d(points["inner"][0], points["inner"][1])
         # self.p2_2d = gp_Pnt2d(points["inner"][0], -points["inner"][1])
@@ -28,22 +27,26 @@ class SlotsBuilder:
         # self.p3_3d_e = gp_Pnt(self.p3_2d.Coord(1), self.p3_2d.Coord(2), input["active_length"])
         # self.p4_3d_e = gp_Pnt(self.p4_2d.Coord(1), self.p4_2d.Coord(2), input["active_length"])
 
-    def makeSlot(self):
-        inner_point_positive = gp_Pnt2d(self.points["inner"]["1"][0], self.points["inner"]["1"][1])
-        inner_point_negative = gp_Pnt2d(self.points["inner"]["1"][0], -self.points["inner"]["1"][1])
-        if len(self.points["inner"]) == 2:
-            inner_point_middle = gp_Pnt2d(self.points["inner"]["2"][0], 0)
+    def body(self, points):
+        inner_point_positive = gp_Pnt2d(points["inner"][0], points["inner"][1])
+        inner_point_negative = gp_Pnt2d(points["inner"][0], -points["inner"][1])
+        if len(points["inner"]) == 3:
+            print("Inner is THREE")
+            inner_point_middle = gp_Pnt2d(points["inner"][2], 0)
             inner_arc = GCE2d_MakeArcOfCircle(inner_point_positive, inner_point_middle, inner_point_negative).Value()
             inner_edge = BRepBuilderAPI_MakeEdge2d(inner_arc).Edge()
         else:
+            print("Inner is Two")
             inner_edge = BRepBuilderAPI_MakeEdge2d(inner_point_positive, inner_point_negative).Edge()
-        outer_point_positive = gp_Pnt2d(self.points["outer"]["1"][0], self.points["outer"]["1"][1])
-        outer_point_negative = gp_Pnt2d(self.points["outer"]["1"][0], -self.points["outer"]["1"][1])
-        if len(self.points["outer"]) == 2:
-            outer_point_middle = gp_Pnt2d(self.points["outer"]["2"][0], 0)
+        outer_point_positive = gp_Pnt2d(points["outer"][0], points["outer"][1])
+        outer_point_negative = gp_Pnt2d(points["outer"][0], -points["outer"][1])
+        if len(points["outer"]) == 3:
+            print("Outer is THRREE")
+            outer_point_middle = gp_Pnt2d(points["outer"][2], 0)
             outer_arc = GCE2d_MakeArcOfCircle(outer_point_positive, outer_point_middle, outer_point_negative).Value()
             outer_edge = BRepBuilderAPI_MakeEdge2d(outer_arc).Edge()
         else:
+            print("Outer is TWO")
             outer_edge = BRepBuilderAPI_MakeEdge2d(outer_point_positive, outer_point_negative).Edge()
         positive_edge = BRepBuilderAPI_MakeEdge2d(inner_point_positive, outer_point_positive).Edge()
         negative_edge = BRepBuilderAPI_MakeEdge2d(inner_point_negative, outer_point_negative).Edge()
@@ -52,11 +55,31 @@ class SlotsBuilder:
         slot = BRepPrimAPI_MakePrism(slot_face, self.input["active_length_vec"], False, True)
         slot.Build()
         slot = slot.Shape()
-        # slot_opening = self.makeFlatSlotOpening()
-        # slot = BRepAlgoAPI_Fuse(slot, slot_opening).Shape()
-        return self.makeMultiple(slot)
+        return slot
 
-    # def makeFlatSlotOpening(self):
+    def opening(self, points):
+        if len(points) == 2:
+            inner_point_positive = gp_Pnt2d(points["inner"][0], points["inner"][1])
+            inner_point_negative = gp_Pnt2d(points["inner"][0], -points["inner"][1])
+            outer_point_positive = gp_Pnt2d(points["outer"][0], points["outer"][1])
+            outer_point_negative = gp_Pnt2d(points["outer"][0], -points["outer"][1])
+            outer_edge = BRepBuilderAPI_MakeEdge2d(outer_point_positive, outer_point_negative).Edge()
+            positive_edge = BRepBuilderAPI_MakeEdge2d(inner_point_positive, outer_point_positive).Edge()
+            negative_edge = BRepBuilderAPI_MakeEdge2d(inner_point_negative, outer_point_negative).Edge()
+            if inner_point_positive.Coord(1) == inner_point_negative.Coord(1) \
+                    and inner_point_positive.Coord(2) == inner_point_negative.Coord(2):
+                opening_wire = BRepBuilderAPI_MakeWire(positive_edge, outer_edge, negative_edge).Wire()
+            else:
+                inner_edge = BRepBuilderAPI_MakeEdge2d(inner_point_positive, inner_point_negative).Edge()
+                opening_wire = BRepBuilderAPI_MakeWire(inner_edge, positive_edge, outer_edge, negative_edge).Wire()
+        else:
+            pass
+        opening_face = BRepBuilderAPI_MakeFace(opening_wire, True).Face()
+        opening = BRepPrimAPI_MakePrism(opening_face, self.input["active_length_vec"], False, True)
+        opening.Build()
+        opening = opening.Shape()
+        return opening
+
     #     # slot_opening_arc_top = GCE2d_MakeArcOfCircle(self.sp1, self.spt, self.sp2).Value()
     #     slot_opening_arc_base = GCE2d_MakeArcOfCircle(self.sp3, self.spb, self.sp4).Value()
     #     # slot_opening_edge_top = BRepBuilderAPI_MakeEdge2d(slot_opening_arc_top).Edge()
@@ -71,12 +94,7 @@ class SlotsBuilder:
     #     slot_opening.Build()
     #     return slot_opening.Shape()
 
-    def makeTiltSlotOpening(self):
-
-        pass
-
     def fillet(self, slot):
-
         pass
 
     def makeMultiple(self, slot):

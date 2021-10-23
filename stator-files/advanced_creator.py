@@ -21,28 +21,29 @@ class AdvancedStatorCreator:
 
     def __init__(self):
         # Stator Type : [["Inner", "Outer"]]
-        stator_type = "Inner"
+        stator_type = "Outer"
         # Slot Bottom Type : [["Curved", "Flat"]]
         slot_type = "Curved"
         # Slot Fillet Type: [["Fillet" , "No Fillet"]]
         slot_fillet_type = "No Fillet"
         # Style of the stator's teeth's feet: [["Flat", "Tilt" ,"No Feet"]]
-        teeth_feet_type = "Flat"
+        teeth_feet_type = "No Feet"
         # Teeth type : [["Constant", "Expanding", "Manual"]]
         teeth_width_type = "Manual"
 
         # Original Material
         active_length = 90
-        stator_inner_radius = 80
-        stator_outer_radius = 200
+        stator_inner_radius = 200
+        stator_outer_radius = 400
 
-        num_of_slots = 14
-        teeth_width = 15  # Using teeth_width instead of slot top and base widths.
-        inner_teeth_width = 15
-        outer_teeth_width = 30
-        slot_opening_depth = 5
-        slot_opening_width = 10  # Constant slot opening width
-        slot_depth = 70
+        num_of_slots = 4
+        teeth_width = 20 # Using teeth_width instead of slot top and base widths.
+        inner_teeth_width = 200
+        outer_teeth_width = 20
+        slot_opening_depth = 10
+        slot_opening_width = 0  # Constant slot opening width
+        slot_feet_angle = 15
+        slot_depth = 50
         fillet_radius_base = 5
         fillet_radius_top = 2
 
@@ -61,45 +62,39 @@ class AdvancedStatorCreator:
                       "outer_teeth_width": outer_teeth_width,
                       "slot_opening_depth": slot_opening_depth,
                       "slot_opening_width": slot_opening_width,
+                      "slot_feet_angle": slot_feet_angle,
                       "slot_depth": slot_depth,
                       "fillet_radius_base": fillet_radius_base,
                       "fillet_radius_top": fillet_radius_top,
                       }
 
-    def makeBase(self):
+        self.calc = Calculate(self.input)
+        self.sb = SlotsBuilder(self.input)
+
+    def base(self):
         inner_cut = BRepPrimAPI_MakeCylinder(self.input["stator_inner_radius"], self.input["active_length"]).Shape()
         base = BRepPrimAPI_MakeCylinder(self.input["stator_outer_radius"], self.input["active_length"]).Shape()
         return BRepAlgoAPI_Cut(base, inner_cut).Shape()
 
-    def makeSlots(self):
-        calc = Calculate(self.input)
-        err = calc.check()
-        if err is not None:
-            print("Error Msg: ", err)
-            return err
-        points = calc.points()
-        sb = SlotsBuilder(points, self.input)
-        return sb.makeSlot()
-
-    def makeStator(self, slots, base):
-        return BRepAlgoAPI_Cut(base, slots).Shape()
-
-
-# This should be called by the PyQt5 code
-def main():
-    asc = AdvancedStatorCreator()
-    base = asc.makeBase()
-    slots = asc.makeSlots()
-    if isinstance(slots, str):
+    def slot(self):
+        calc_body = self.calc.body
+        if isinstance(calc_body, str):
+            return calc_body
+        points_body = self.calc.points_body()
+        print("points_body: ", points_body)
+        body = self.sb.body(points_body)
+        # calc_opening = self.calc.opening
+        # if isinstance(calc_opening, str):
+        #     return calc_opening
+        # points_opening = self.calc.points_opening()
+        # print("points_opening: ", points_opening)
+        # opening = self.sb.opening(points_opening)
+        # slot = BRepAlgoAPI_Fuse(body, opening).Shape()
+        # slots = self.sb.makeMultiple(slot)
+        slots = self.sb.makeMultiple(body)
+        # slots = self.sb.makeMultiple(opening)
         return slots
-    stator = asc.makeStator(slots, base)
 
-    # Display the stator if its made
-    display, start_display, add_menu, add_function_to_menu = init_display()
-    display.DisplayShape(stator, update=True)
-    start_display()
-
-
-if __name__ == '__main__':
-    main()
+    def stator(self, slots, base):
+        return BRepAlgoAPI_Cut(base, slots).Shape()
 
