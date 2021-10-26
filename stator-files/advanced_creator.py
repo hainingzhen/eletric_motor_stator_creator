@@ -29,21 +29,22 @@ class AdvancedStatorCreator:
         # Style of the stator's teeth's feet: [["Flat", "Tilt" ,"No Feet"]]
         teeth_feet_type = "No Feet"
         # Teeth type : [["Constant", "Expanding", "Manual"]]
-        teeth_width_type = "Manual"
+        teeth_width_type = "Expanding"
 
         # Original Material
         active_length = 90
         stator_inner_radius = 200
         stator_outer_radius = 400
 
-        num_of_slots = 4
+        # Minimum number of slots = 2
+        num_of_slots = 20
         teeth_width = 20 # Using teeth_width instead of slot top and base widths.
         inner_teeth_width = 200
         outer_teeth_width = 20
         slot_opening_depth = 10
         slot_opening_width = 0  # Constant slot opening width
         slot_feet_angle = 15
-        slot_depth = 50
+        slot_depth = 100
         fillet_radius_base = 5
         fillet_radius_top = 2
 
@@ -86,13 +87,13 @@ class AdvancedStatorCreator:
         # calc_opening = self.calc.opening
         # if isinstance(calc_opening, str):
         #     return calc_opening
-        # points_opening = self.calc.points_opening()
-        # print("points_opening: ", points_opening)
-        # opening = self.sb.opening(points_opening)
-        # slot = BRepAlgoAPI_Fuse(body, opening).Shape()
+        points_opening = self.calc.points_opening(points_body)
+        print("points_opening: ", points_opening)
+        opening = self.sb.opening(points_opening)
+        slot = BRepAlgoAPI_Fuse(body, opening).Shape()
         # slots = self.sb.makeMultiple(slot)
-        slots = self.sb.makeMultiple(body)
-        # slots = self.sb.makeMultiple(opening)
+        # slots = self.sb.makeMultiple(body)
+        slots = self.sb.makeMultiple(slot)
         return slots
 
     def stator(self, slots, base):

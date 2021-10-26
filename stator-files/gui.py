@@ -17,7 +17,7 @@ class Gui:
             self.error(slot)
             return
         display, start_display, add_menu, add_function_to_menu = init_display()
-        # compare = BRepPrimAPI_MakeCylinder(159, 90).Shape()
+        # compare = BRepPrimAPI_MakeCylinder(200, 90).Shape()
         # display.DisplayShape(compare, update=True)
         # display.DisplayShape(slot, update=True)
         display.DisplayShape(self.asc.stator(slot, base), update=True)

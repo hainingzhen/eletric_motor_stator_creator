@@ -1,13 +1,14 @@
 from math import pi, cos, sin, tan, asin, radians
 import sympy as sym
 
+
 class Calculate:
 
     def __init__(self, _input):
         self.input = _input
         self.body = self.body()
 
-    def calc(self, radius, angle):
+    def body_calc(self, radius, angle):
         circumference = 2 * pi * radius
         teeth_arclength = circumference * (angle / radians(360))
         total_teeth_arclength = teeth_arclength * self.input["num_of_slots"]
@@ -39,39 +40,39 @@ class Calculate:
             teeth_angle_min = 2 * asin(self.input["teeth_width"] / 2 / self.input["stator_inner_radius"])
             teeth_angle_max = 2 * asin(self.input["teeth_width"] / 2 / self.input["stator_outer_radius"])
 
-        print("teeth_angle_inner: ", teeth_angle_inner)
-        print("teeth_angle_outer: ", teeth_angle_outer)
-        print("teeth_angle_max: ", teeth_angle_max)
-        print("teeth_angle_min: ", teeth_angle_min)
-        inner_circumference = 2 * pi * inner_radius
-        outer_circumference = 2 * pi * outer_radius
-        min_circumference = 2 * pi * self.input["stator_inner_radius"]
-        max_circumference = 2 * pi * self.input["stator_outer_radius"]
-        print(max_circumference)
-        teeth_arclength_inner = inner_circumference * (teeth_angle_inner / radians(360))
-        teeth_arclength_outer = outer_circumference * (teeth_angle_outer / radians(360))
-        teeth_arclength_min = min_circumference * (teeth_angle_min / radians(360))
-        teeth_arclength_max = max_circumference * (teeth_angle_max / radians(360))
-        print(teeth_arclength_max)
-        total_teeth_arclength_inner = teeth_arclength_inner * self.input["num_of_slots"]
-        total_teeth_arclength_outer = teeth_arclength_outer * self.input["num_of_slots"]
-        total_teeth_arclength_min = teeth_arclength_min * self.input["num_of_slots"]
-        total_teeth_arclength_max = teeth_arclength_max * self.input["num_of_slots"]
-        print(total_teeth_arclength_max)
-        slot_arclength_inner = (inner_circumference - total_teeth_arclength_inner) / self.input["num_of_slots"]
-        slot_arclength_outer = (outer_circumference - total_teeth_arclength_outer) / self.input["num_of_slots"]
-        slot_arclength_min = (min_circumference - total_teeth_arclength_min) / self.input["num_of_slots"]
-        slot_arclength_max = (max_circumference - total_teeth_arclength_max) / self.input["num_of_slots"]
-        print(slot_arclength_max)
-        slot_inner_angle = radians(360 * (0.5 * slot_arclength_inner / inner_circumference))
-        slot_outer_angle = radians(360 * (0.5 * slot_arclength_outer / outer_circumference))
-        slot_min_angle = radians(360 * (0.5 * slot_arclength_min / min_circumference))
-        slot_max_angle = radians(360 * (0.5 * slot_arclength_max / max_circumference))
+        # print("teeth_angle_inner: ", teeth_angle_inner)
+        # print("teeth_angle_outer: ", teeth_angle_outer)
+        # print("teeth_angle_max: ", teeth_angle_max)
+        # print("teeth_angle_min: ", teeth_angle_min)
+        # inner_circumference = 2 * pi * inner_radius
+        # outer_circumference = 2 * pi * outer_radius
+        # min_circumference = 2 * pi * self.input["stator_inner_radius"]
+        # max_circumference = 2 * pi * self.input["stator_outer_radius"]
+        # print(max_circumference)
+        # teeth_arclength_inner = inner_circumference * (teeth_angle_inner / radians(360))
+        # teeth_arclength_outer = outer_circumference * (teeth_angle_outer / radians(360))
+        # teeth_arclength_min = min_circumference * (teeth_angle_min / radians(360))
+        # teeth_arclength_max = max_circumference * (teeth_angle_max / radians(360))
+        # print(teeth_arclength_max)
+        # total_teeth_arclength_inner = teeth_arclength_inner * self.input["num_of_slots"]
+        # total_teeth_arclength_outer = teeth_arclength_outer * self.input["num_of_slots"]
+        # total_teeth_arclength_min = teeth_arclength_min * self.input["num_of_slots"]
+        # total_teeth_arclength_max = teeth_arclength_max * self.input["num_of_slots"]
+        # print(total_teeth_arclength_max)
+        # slot_arclength_inner = (inner_circumference - total_teeth_arclength_inner) / self.input["num_of_slots"]
+        # slot_arclength_outer = (outer_circumference - total_teeth_arclength_outer) / self.input["num_of_slots"]
+        # slot_arclength_min = (min_circumference - total_teeth_arclength_min) / self.input["num_of_slots"]
+        # slot_arclength_max = (max_circumference - total_teeth_arclength_max) / self.input["num_of_slots"]
+        # print(slot_arclength_max)
+        # slot_inner_angle = radians(360 * (0.5 * slot_arclength_inner / inner_circumference))
+        # slot_outer_angle = radians(360 * (0.5 * slot_arclength_outer / outer_circumference))
+        # slot_min_angle = radians(360 * (0.5 * slot_arclength_min / min_circumference))
+        # slot_max_angle = radians(360 * (0.5 * slot_arclength_max / max_circumference))
 
-        # slot_inner_angle = self.calc(inner_radius, teeth_angle_inner)
-        # slot_outer_angle = self.calc(outer_radius, teeth_angle_outer)
-        # slot_min_angle = self.calc(self.input["stator_inner_radius"], teeth_angle_min)
-        # slot_max_angle = self.calc(self.input["stator_outer_radius"], teeth_angle_max)
+        slot_inner_angle = self.body_calc(inner_radius, teeth_angle_inner)
+        slot_outer_angle = self.body_calc(outer_radius, teeth_angle_outer)
+        slot_min_angle = self.body_calc(self.input["stator_inner_radius"], teeth_angle_min)
+        slot_max_angle = self.body_calc(self.input["stator_outer_radius"], teeth_angle_max)
 
         min_y = self.input["stator_inner_radius"] * sin(slot_min_angle)
         max_y = self.input["stator_outer_radius"] * sin(slot_max_angle)
@@ -80,10 +81,10 @@ class Calculate:
         gradient = (outer[1] - inner[1]) / (outer[0] - inner[0])
         constant = outer[1] - gradient * outer[0]
 
-        print("min_y: ", min_y)
-        print("max_y: ", max_y)
-        print("inner[1]: ", inner[1])
-        print("outer[1]: ", outer[1])
+        # print("min_y: ", min_y)
+        # print("max_y: ", max_y)
+        # print("inner[1]: ", inner[1])
+        # print("outer[1]: ", outer[1])
 
         if inner[1] <= 0.25:
             return "Inner slot edge has width below 0.5mm!"
@@ -133,35 +134,24 @@ class Calculate:
                     "outer": [self.body["outer"][0], self.body["outer"][1], self.body["outer_radius"]]
                 }
 
-    def points_opening(self):
+    def intersect(self, radius):
+        x, y = sym.symbols('x,y')
+        straight_eq = sym.Eq(-self.body["gradient"]*x + y, self.body["constant"])
+        circular_eq = sym.Eq(x**2 + y**2, radius**2)
+        results = sym.solve([straight_eq, circular_eq], (x, y))
+        for result in results:
+            if result[0] > 0:
+                x = float(result[0])
+                y = float(result[1])
+        return x, y
+
+    def points_opening(self, points_body):
         if self.input["stator_type"] == "Outer":
             if self.input["teeth_feet_type"] == "No Feet":
-                inner_x, inner_y = sym.symbols('x,y')
-                str_eq = sym.Eq(-self.body["gradient"] * inner_x + inner_y, self.body["constant"])
-                cir_eq = sym.Eq(inner_x**2 + inner_y**2, self.input["stator_inner_radius"]**2)
-                results = sym.solve([str_eq, cir_eq], (inner_x, inner_y))
-                for result in results:
-                    if result[0] > 0:
-                        inner_x = float(result[0])
-                        inner_y = float(result[1])
+                inner_x, inner_y = self.intersect(self.input["stator_inner_radius"])
                 return {
-                    "inner": [inner_x, inner_y],
-                    "outer": self.body["outer"]
-                }
-            else:
-                adj = self.body["inner"][1] - self.input["slot_opening_width"] / 2
-                opp = adj * tan(self.input["slot_feet_angle"])
-                return {
-                    "inner": [0, self.input["slot_opening_depth"]],
-                    "mid": [],
-                    "outer": self.body["inner"]
-                }
-        else:
-            if self.input["teeth_feet_type"] == "No Feet":
-                return {
-                    "inner": self.body["outer"],
-                    "outer": [2 * self.body["outer_radius"],
-                              self.body["gradient"] * 2 * self.body["outer_radius"] + self.body["constant"]]
+                    "inner": [inner_x, inner_y, self.input["stator_inner_radius"]],
+                    "outer": points_body["inner"]
                 }
             else:
                 return {
@@ -169,6 +159,20 @@ class Calculate:
                     "mid": [],
                     "outer": []
                 }
+        else:
+            if self.input["teeth_feet_type"] == "No Feet":
+                outer_x, outer_y = self.intersect(self.input["stator_outer_radius"])
+                return {
+                    "inner": points_body["outer"],
+                    "outer": [outer_x, outer_y, self.input["stator_outer_radius"]]
+                }
+            else:
+                return {
+                    "inner": [],
+                    "mid": [],
+                    "outer": []
+                }
+
 
 # return {
 #     "inner_radius": inner_radius,

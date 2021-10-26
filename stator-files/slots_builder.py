@@ -41,7 +41,7 @@ class SlotsBuilder:
         outer_point_positive = gp_Pnt2d(points["outer"][0], points["outer"][1])
         outer_point_negative = gp_Pnt2d(points["outer"][0], -points["outer"][1])
         if len(points["outer"]) == 3:
-            print("Outer is THRREE")
+            print("Outer is THREE")
             outer_point_middle = gp_Pnt2d(points["outer"][2], 0)
             outer_arc = GCE2d_MakeArcOfCircle(outer_point_positive, outer_point_middle, outer_point_negative).Value()
             outer_edge = BRepBuilderAPI_MakeEdge2d(outer_arc).Edge()
@@ -59,20 +59,31 @@ class SlotsBuilder:
 
     def opening(self, points):
         if len(points) == 2:
-            inner_point_positive = gp_Pnt2d(points["inner"][0], points["inner"][1])
-            inner_point_negative = gp_Pnt2d(points["inner"][0], -points["inner"][1])
-            outer_point_positive = gp_Pnt2d(points["outer"][0], points["outer"][1])
-            outer_point_negative = gp_Pnt2d(points["outer"][0], -points["outer"][1])
-            outer_edge = BRepBuilderAPI_MakeEdge2d(outer_point_positive, outer_point_negative).Edge()
-            positive_edge = BRepBuilderAPI_MakeEdge2d(inner_point_positive, outer_point_positive).Edge()
-            negative_edge = BRepBuilderAPI_MakeEdge2d(inner_point_negative, outer_point_negative).Edge()
-            if inner_point_positive.Coord(1) == inner_point_negative.Coord(1) \
-                    and inner_point_positive.Coord(2) == inner_point_negative.Coord(2):
-                opening_wire = BRepBuilderAPI_MakeWire(positive_edge, outer_edge, negative_edge).Wire()
+            if len(points["inner"]) == 3:
+                inner_point_p = gp_Pnt2d(points["inner"][0], points["inner"][1])
+                inner_point_n = gp_Pnt2d(points["inner"][0], -points["inner"][1])
+                inner_point_m = gp_Pnt2d(points["inner"][2], 0)
+                inner_arc = GCE2d_MakeArcOfCircle(inner_point_p, inner_point_m, inner_point_n).Value()
+                inner_edge = BRepBuilderAPI_MakeEdge2d(inner_arc).Edge()
             else:
-                inner_edge = BRepBuilderAPI_MakeEdge2d(inner_point_positive, inner_point_negative).Edge()
-                opening_wire = BRepBuilderAPI_MakeWire(inner_edge, positive_edge, outer_edge, negative_edge).Wire()
+                inner_point_p = gp_Pnt2d(points["inner"][0], points["inner"][1])
+                inner_point_n = gp_Pnt2d(points["inner"][0], -points["inner"][1])
+                inner_edge = BRepBuilderAPI_MakeEdge2d(inner_point_p, inner_point_n).Edge()
+            if len(points["outer"]) == 3:
+                outer_point_p = gp_Pnt2d(points["outer"][0], points["outer"][1])
+                outer_point_n = gp_Pnt2d(points["outer"][0], -points["outer"][1])
+                outer_point_m = gp_Pnt2d(points["outer"][2], 0)
+                outer_arc = GCE2d_MakeArcOfCircle(outer_point_p, outer_point_m, outer_point_n).Value()
+                outer_edge = BRepBuilderAPI_MakeEdge2d(outer_arc).Edge()
+            else:
+                outer_point_p = gp_Pnt2d(points["outer"][0], points["outer"][1])
+                outer_point_n = gp_Pnt2d(points["outer"][0], -points["outer"][1])
+                outer_edge = BRepBuilderAPI_MakeEdge2d(outer_point_p, outer_point_n).Edge()
+            positive_edge = BRepBuilderAPI_MakeEdge2d(inner_point_p, outer_point_p).Edge()
+            negative_edge = BRepBuilderAPI_MakeEdge2d(inner_point_n, outer_point_n).Edge()
+            opening_wire = BRepBuilderAPI_MakeWire(inner_edge, positive_edge, outer_edge, negative_edge).Wire()
         else:
+            # Feet with three inputs
             pass
         opening_face = BRepBuilderAPI_MakeFace(opening_wire, True).Face()
         opening = BRepPrimAPI_MakePrism(opening_face, self.input["active_length_vec"], False, True)
