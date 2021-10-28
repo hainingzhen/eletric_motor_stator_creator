@@ -83,32 +83,46 @@ class SlotsBuilder:
             negative_edge = BRepBuilderAPI_MakeEdge2d(inner_point_n, outer_point_n).Edge()
             opening_wire = BRepBuilderAPI_MakeWire(inner_edge, positive_edge, outer_edge, negative_edge).Wire()
         else:
-            # Feet with three inputs
-            pass
+            if len(points["inner"]) == 3:
+                inner_point_p = gp_Pnt2d(points["inner"][0], points["inner"][1])
+                inner_point_n = gp_Pnt2d(points["inner"][0], -points["inner"][1])
+                inner_point_m = gp_Pnt2d(points["inner"][2], 0)
+                inner_arc = GCE2d_MakeArcOfCircle(inner_point_p, inner_point_m, inner_point_n).Value()
+                inner_edge = BRepBuilderAPI_MakeEdge2d(inner_arc).Edge()
+            else:
+                inner_point_p = gp_Pnt2d(points["inner"][0], points["inner"][1])
+                inner_point_n = gp_Pnt2d(points["inner"][0], -points["inner"][1])
+                inner_edge = BRepBuilderAPI_MakeEdge2d(inner_point_p, inner_point_n).Edge()
+            if len(points["outer"]) == 3:
+                outer_point_p = gp_Pnt2d(points["outer"][0], points["outer"][1])
+                outer_point_n = gp_Pnt2d(points["outer"][0], -points["outer"][1])
+                outer_point_m = gp_Pnt2d(points["outer"][2], 0)
+                outer_arc = GCE2d_MakeArcOfCircle(outer_point_p, outer_point_m, outer_point_n).Value()
+                outer_edge = BRepBuilderAPI_MakeEdge2d(outer_arc).Edge()
+            else:
+                outer_point_p = gp_Pnt2d(points["outer"][0], points["outer"][1])
+                outer_point_n = gp_Pnt2d(points["outer"][0], -points["outer"][1])
+                outer_edge = BRepBuilderAPI_MakeEdge2d(outer_point_p, outer_point_n).Edge()
+            mid_point_p = gp_Pnt2d(points["mid"][0], points["mid"][1])
+            mid_point_n = gp_Pnt2d(points["mid"][0], -points["mid"][1])
+            positive_edge_inner = BRepBuilderAPI_MakeEdge2d(inner_point_p, mid_point_p).Edge()
+            positive_edge_outer = BRepBuilderAPI_MakeEdge2d(mid_point_p, outer_point_p).Edge()
+            negative_edge_inner = BRepBuilderAPI_MakeEdge2d(inner_point_n, mid_point_n).Edge()
+            negative_edge_outer = BRepBuilderAPI_MakeEdge2d(mid_point_n, outer_point_n).Edge()
+            opening_wire = BRepBuilderAPI_MakeWire(inner_edge, positive_edge_inner,
+                                                   positive_edge_outer, outer_edge).Wire()
+            opening_wire = BRepBuilderAPI_MakeWire(opening_wire, negative_edge_outer).Wire()
+            opening_wire = BRepBuilderAPI_MakeWire(opening_wire, negative_edge_inner).Wire()
         opening_face = BRepBuilderAPI_MakeFace(opening_wire, True).Face()
         opening = BRepPrimAPI_MakePrism(opening_face, self.input["active_length_vec"], False, True)
         opening.Build()
         opening = opening.Shape()
         return opening
 
-    #     # slot_opening_arc_top = GCE2d_MakeArcOfCircle(self.sp1, self.spt, self.sp2).Value()
-    #     slot_opening_arc_base = GCE2d_MakeArcOfCircle(self.sp3, self.spb, self.sp4).Value()
-    #     # slot_opening_edge_top = BRepBuilderAPI_MakeEdge2d(slot_opening_arc_top).Edge()
-    #     slot_opening_edge_top = BRepBuilderAPI_MakeEdge2d(self.sp1, self.sp2).Edge()
-    #     slot_opening_edge_base = BRepBuilderAPI_MakeEdge2d(slot_opening_arc_base).Edge()
-    #     slot_opening_edge_left = BRepBuilderAPI_MakeEdge2d(self.sp2, self.sp4).Edge()
-    #     slot_opening_edge_right = BRepBuilderAPI_MakeEdge2d(self.sp1, self.sp3).Edge()
-    #     slot_opening_wire = BRepBuilderAPI_MakeWire(slot_opening_edge_top, slot_opening_edge_left,
-    #                                                 slot_opening_edge_right, slot_opening_edge_base).Wire()
-    #     slot_opening_face = BRepBuilderAPI_MakeFace(slot_opening_wire, True).Face()
-    #     slot_opening = BRepPrimAPI_MakePrism(slot_opening_face, self.input["active_length_vec"], False, True)
-    #     slot_opening.Build()
-    #     return slot_opening.Shape()
-
     def fillet(self, slot):
         pass
 
-    def makeMultiple(self, slot):
+    def multiple(self, slot):
         rot = gp_Trsf()
         num_of_box = 0
         while num_of_box < self.input["num_of_slots"]:

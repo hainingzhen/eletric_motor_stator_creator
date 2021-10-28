@@ -26,8 +26,8 @@ class AdvancedStatorCreator:
         slot_type = "Curved"
         # Slot Fillet Type: [["Fillet" , "No Fillet"]]
         slot_fillet_type = "No Fillet"
-        # Style of the stator's teeth's feet: [["Flat", "Tilt" ,"No Feet"]]
-        teeth_feet_type = "No Feet"
+        # Style of the stator's teeth's feet: [["Feet" ,"No Feet"]]
+        teeth_feet_type = "Feet"
         # Teeth type : [["Constant", "Expanding", "Manual"]]
         teeth_width_type = "Expanding"
 
@@ -37,14 +37,18 @@ class AdvancedStatorCreator:
         stator_outer_radius = 400
 
         # Minimum number of slots = 2
-        num_of_slots = 20
-        teeth_width = 20 # Using teeth_width instead of slot top and base widths.
+        num_of_slots = 15
+        # Constant Teeth Width Parameter: teeth_width
+        teeth_width = 20
+        # Manual Teeth Width Parameter: inner_teeth_width, outer_teeth_width
         inner_teeth_width = 200
         outer_teeth_width = 20
+
         slot_opening_depth = 10
-        slot_opening_width = 0  # Constant slot opening width
-        slot_feet_angle = 15
+        slot_opening_depth_1 = 5
+        slot_opening_width = 9
         slot_depth = 100
+
         fillet_radius_base = 5
         fillet_radius_top = 2
 
@@ -62,8 +66,8 @@ class AdvancedStatorCreator:
                       "inner_teeth_width": inner_teeth_width,
                       "outer_teeth_width": outer_teeth_width,
                       "slot_opening_depth": slot_opening_depth,
+                      "slot_opening_depth_1": slot_opening_depth_1,
                       "slot_opening_width": slot_opening_width,
-                      "slot_feet_angle": slot_feet_angle,
                       "slot_depth": slot_depth,
                       "fillet_radius_base": fillet_radius_base,
                       "fillet_radius_top": fillet_radius_top,
@@ -93,7 +97,7 @@ class AdvancedStatorCreator:
         slot = BRepAlgoAPI_Fuse(body, opening).Shape()
         # slots = self.sb.makeMultiple(slot)
         # slots = self.sb.makeMultiple(body)
-        slots = self.sb.makeMultiple(slot)
+        slots = self.sb.multiple(slot)
         return slots
 
     def stator(self, slots, base):

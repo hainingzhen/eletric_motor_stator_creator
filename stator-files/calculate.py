@@ -90,14 +90,6 @@ class Calculate:
             return "Inner slot edge has width below 0.5mm!"
         if outer[1] <= 0.25:
             return "Outer slot edge has width below 0.5mm! Check manual inputs."
-        # if self.input["stator_type"] == "Outer":
-        #     if self.input["slot_opening_width"]/2 >= min_y or self.input["slot_opening_width"]/2 >= inner[1]:
-        #         return "Slot feet opening width is too large."
-        # else:
-        #     if self.input["slot_opening_width"]/2 >= outer[1] or self.input["slot_opening_width"]/2 >= max_y:
-        #         # return "Slot feet opening width is too large."
-        #         print("PROBLEM")
-        #         pass
 
         return {
             "inner_radius": inner_radius,
@@ -134,9 +126,9 @@ class Calculate:
                     "outer": [self.body["outer"][0], self.body["outer"][1], self.body["outer_radius"]]
                 }
 
-    def intersect(self, radius):
+    def intersect(self, radius, gradient, constant):
         x, y = sym.symbols('x,y')
-        straight_eq = sym.Eq(-self.body["gradient"]*x + y, self.body["constant"])
+        straight_eq = sym.Eq(-gradient * x + y, constant)
         circular_eq = sym.Eq(x**2 + y**2, radius**2)
         results = sym.solve([straight_eq, circular_eq], (x, y))
         for result in results:
@@ -148,20 +140,30 @@ class Calculate:
     def points_opening(self, points_body):
         if self.input["stator_type"] == "Outer":
             if self.input["teeth_feet_type"] == "No Feet":
-                inner_x, inner_y = self.intersect(self.input["stator_inner_radius"])
+                inner_x, inner_y = self.intersect(self.input["stator_inner_radius"],
+                                                  self.body["gradient"],
+                                                  self.body["constant"])
                 return {
                     "inner": [inner_x, inner_y, self.input["stator_inner_radius"]],
                     "outer": points_body["inner"]
                 }
             else:
+                print("HERE")
+                inner_y = self.input["slot_opening_width"] / 2
+                inner_x = self.input["stator_inner_radius"] * cos(asin(inner_y / self.input["stator_inner_radius"]))
+                mid_x, mid_y = self.intersect(self.input["stator_inner_radius"] + self.input["slot_opening_depth_1"],
+                                              inner_y / inner_x,
+                                              0)
                 return {
-                    "inner": [],
-                    "mid": [],
-                    "outer": []
+                    "inner": [inner_x, inner_y, self.input["stator_inner_radius"]],
+                    "mid": [mid_x, mid_y],
+                    "outer": points_body["inner"]
                 }
         else:
             if self.input["teeth_feet_type"] == "No Feet":
-                outer_x, outer_y = self.intersect(self.input["stator_outer_radius"])
+                outer_x, outer_y = self.intersect(self.input["stator_outer_radius"],
+                                                  self.body["gradient"],
+                                                  self.body["constant"])
                 return {
                     "inner": points_body["outer"],
                     "outer": [outer_x, outer_y, self.input["stator_outer_radius"]]
