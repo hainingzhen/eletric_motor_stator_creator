@@ -31,22 +31,18 @@ class SlotsBuilder:
         inner_point_positive = gp_Pnt2d(points["inner"][0], points["inner"][1])
         inner_point_negative = gp_Pnt2d(points["inner"][0], -points["inner"][1])
         if len(points["inner"]) == 3:
-            print("Inner is THREE")
             inner_point_middle = gp_Pnt2d(points["inner"][2], 0)
             inner_arc = GCE2d_MakeArcOfCircle(inner_point_positive, inner_point_middle, inner_point_negative).Value()
             inner_edge = BRepBuilderAPI_MakeEdge2d(inner_arc).Edge()
         else:
-            print("Inner is Two")
             inner_edge = BRepBuilderAPI_MakeEdge2d(inner_point_positive, inner_point_negative).Edge()
         outer_point_positive = gp_Pnt2d(points["outer"][0], points["outer"][1])
         outer_point_negative = gp_Pnt2d(points["outer"][0], -points["outer"][1])
         if len(points["outer"]) == 3:
-            print("Outer is THREE")
             outer_point_middle = gp_Pnt2d(points["outer"][2], 0)
             outer_arc = GCE2d_MakeArcOfCircle(outer_point_positive, outer_point_middle, outer_point_negative).Value()
             outer_edge = BRepBuilderAPI_MakeEdge2d(outer_arc).Edge()
         else:
-            print("Outer is TWO")
             outer_edge = BRepBuilderAPI_MakeEdge2d(outer_point_positive, outer_point_negative).Edge()
         positive_edge = BRepBuilderAPI_MakeEdge2d(inner_point_positive, outer_point_positive).Edge()
         negative_edge = BRepBuilderAPI_MakeEdge2d(inner_point_negative, outer_point_negative).Edge()

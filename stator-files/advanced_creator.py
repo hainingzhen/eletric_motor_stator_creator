@@ -21,7 +21,7 @@ class AdvancedStatorCreator:
 
     def __init__(self):
         # Stator Type : [["Inner", "Outer"]]
-        stator_type = "Outer"
+        stator_type = "Inner"
         # Slot Bottom Type : [["Curved", "Flat"]]
         slot_type = "Curved"
         # Slot Fillet Type: [["Fillet" , "No Fillet"]]
@@ -46,7 +46,7 @@ class AdvancedStatorCreator:
 
         slot_opening_depth = 10
         slot_opening_depth_1 = 5
-        slot_opening_width = 9
+        slot_opening_width = 12 # Must have a width
         slot_depth = 100
 
         fillet_radius_base = 5

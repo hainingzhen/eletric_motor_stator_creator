@@ -148,7 +148,6 @@ class Calculate:
                     "outer": points_body["inner"]
                 }
             else:
-                print("HERE")
                 inner_y = self.input["slot_opening_width"] / 2
                 inner_x = self.input["stator_inner_radius"] * cos(asin(inner_y / self.input["stator_inner_radius"]))
                 mid_x, mid_y = self.intersect(self.input["stator_inner_radius"] + self.input["slot_opening_depth_1"],
@@ -169,10 +168,15 @@ class Calculate:
                     "outer": [outer_x, outer_y, self.input["stator_outer_radius"]]
                 }
             else:
+                outer_y = self.input["slot_opening_width"] / 2
+                outer_x = self.input["stator_outer_radius"] * cos(asin(outer_y / self.input["stator_outer_radius"]))
+                mid_x, mid_y = self.intersect(self.input["stator_outer_radius"] - self.input["slot_opening_depth_1"],
+                                              outer_y / outer_x,
+                                              0)
                 return {
-                    "inner": [],
-                    "mid": [],
-                    "outer": []
+                    "inner": points_body["outer"],
+                    "mid": [mid_x, mid_y],
+                    "outer": [outer_x, outer_y, self.input["stator_outer_radius"]]
                 }
 
 
