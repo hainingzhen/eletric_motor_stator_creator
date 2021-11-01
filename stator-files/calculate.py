@@ -113,11 +113,16 @@ class Calculate:
                     "outer": points_body["inner"]
                 }
             elif self.input["teeth_feet_type"] == "Default":
-                angle_limit = atan(min_y / min_x)
-
+                inner_y = self.input["slot_opening_width"] / 2
+                inner_x = self.input["stator_inner_radius"] * cos(asin(inner_y / self.input["stator_inner_radius"]))
+                if atan(inner_y / inner_x) > atan(min_y / min_x):
+                    return "Slot feet opening width is too large."
+                outer_x, outer_y = self.intersect(self.input["stator_inner_radius"] + self.input["slot_opening_depth"],
+                                                  inner_y / inner_x,
+                                                  0)
                 return {
-                    "inner": [],
-                    "outer": []
+                    "inner": [inner_x, inner_y, self.input["stator_inner_radius"]],
+                    "outer": [outer_x, outer_y, self.input["stator_inner_radius"] + self.input["slot_opening_depth"]]
                 }
             else:
                 inner_y = self.input["slot_opening_width"] / 2
@@ -140,11 +145,17 @@ class Calculate:
                     "outer": [outer_x, outer_y, self.input["stator_outer_radius"]]
                 }
             elif self.input["teeth_feet_type"] == "Default":
-                x, y = self.intersect(self.input["stator_outer_radius"] - self.input["slot_opening_depth"],
-                                      self.body["gradient"],
-                                      self.body["constant"])
-
-                pass
+                inner_radius = self.input["stator_outer_radius"] - self.input["slot_opening_depth"]
+                limit_x, limit_y = self.intersect(inner_radius, self.body["gradient"], self.body["constant"])
+                inner_y = self.input["slot_opening_width"] / 2
+                inner_x = inner_radius * cos(asin(inner_y / inner_radius))
+                if atan(inner_y / inner_x) > atan(limit_y / limit_x):
+                    return "Slot feet opening width is too large."
+                outer_x, outer_y = self.intersect(self.input["stator_outer_width"], inner_y / inner_x, 0)
+                return {
+                    "inner": [inner_x, inner_y, inner_radius],
+                    "outer": [outer_x, outer_y, self.input["stator_outer_width"]]
+                }
             else:
                 outer_y = self.input["slot_opening_width"] / 2
                 outer_x = self.input["stator_outer_radius"] * cos(asin(outer_y / self.input["stator_outer_radius"]))
