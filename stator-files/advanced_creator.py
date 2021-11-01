@@ -21,33 +21,34 @@ class AdvancedStatorCreator:
 
     def __init__(self):
         # Stator Type : [["Inner", "Outer"]]
-        stator_type = "Inner"
+        stator_type = "Outer"
         # Slot Bottom Type : [["Curved", "Flat"]]
         slot_type = "Curved"
         # Slot Fillet Type: [["Fillet" , "No Fillet"]]
         slot_fillet_type = "No Fillet"
-        # Style of the stator's teeth's feet: [["Feet" ,"No Feet"]]
-        teeth_feet_type = "Feet"
+        # Style of the stator's teeth's feet: [["Default", "Custom" ,"No Feet"]]
+        teeth_feet_type = "Default"
         # Teeth type : [["Constant", "Expanding", "Manual"]]
         teeth_width_type = "Expanding"
 
         # Original Material
-        active_length = 90
+        active_length = 200
         stator_inner_radius = 200
         stator_outer_radius = 400
 
         # Minimum number of slots = 2
-        num_of_slots = 15
+        num_of_slots = 3
         # Constant Teeth Width Parameter: teeth_width
         teeth_width = 20
         # Manual Teeth Width Parameter: inner_teeth_width, outer_teeth_width
         inner_teeth_width = 200
         outer_teeth_width = 20
 
-        slot_opening_depth = 10
-        slot_opening_depth_1 = 5
-        slot_opening_width = 12 # Must have a width
         slot_depth = 100
+        slot_opening_depth = 40
+        slot_opening_depth_1 = 20
+        # Slot opening must have a [width > 0]
+        slot_opening_width = 50
 
         fillet_radius_base = 5
         fillet_radius_top = 2
@@ -86,19 +87,14 @@ class AdvancedStatorCreator:
         if isinstance(calc_body, str):
             return calc_body
         points_body = self.calc.points_body()
-        print("points_body: ", points_body)
         body = self.sb.body(points_body)
         # calc_opening = self.calc.opening
         # if isinstance(calc_opening, str):
         #     return calc_opening
         points_opening = self.calc.points_opening(points_body)
-        print("points_opening: ", points_opening)
         opening = self.sb.opening(points_opening)
         slot = BRepAlgoAPI_Fuse(body, opening).Shape()
-        # slots = self.sb.makeMultiple(slot)
-        # slots = self.sb.makeMultiple(body)
-        slots = self.sb.multiple(slot)
-        return slots
+        return self.sb.multiple(slot)
 
     def stator(self, slots, base):
         return BRepAlgoAPI_Cut(base, slots).Shape()

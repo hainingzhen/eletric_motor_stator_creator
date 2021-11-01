@@ -50,8 +50,7 @@ class SlotsBuilder:
         slot_face = BRepBuilderAPI_MakeFace(slot_wire, True).Face()
         slot = BRepPrimAPI_MakePrism(slot_face, self.input["active_length_vec"], False, True)
         slot.Build()
-        slot = slot.Shape()
-        return slot
+        return slot.Shape()
 
     def opening(self, points):
         if len(points) == 2:
@@ -112,8 +111,7 @@ class SlotsBuilder:
         opening_face = BRepBuilderAPI_MakeFace(opening_wire, True).Face()
         opening = BRepPrimAPI_MakePrism(opening_face, self.input["active_length_vec"], False, True)
         opening.Build()
-        opening = opening.Shape()
-        return opening
+        return opening.Shape()
 
     def fillet(self, slot):
         pass
