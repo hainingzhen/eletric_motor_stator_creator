@@ -151,10 +151,10 @@ class Calculate:
                 inner_x = inner_radius * cos(asin(inner_y / inner_radius))
                 if atan(inner_y / inner_x) > atan(limit_y / limit_x):
                     return "Slot feet opening width is too large."
-                outer_x, outer_y = self.intersect(self.input["stator_outer_width"], inner_y / inner_x, 0)
+                outer_x, outer_y = self.intersect(self.input["stator_outer_radius"], inner_y / inner_x, 0)
                 return {
                     "inner": [inner_x, inner_y, inner_radius],
-                    "outer": [outer_x, outer_y, self.input["stator_outer_width"]]
+                    "outer": [outer_x, outer_y, self.input["stator_outer_radius"]]
                 }
             else:
                 outer_y = self.input["slot_opening_width"] / 2

@@ -1,7 +1,12 @@
-from math import cos, sin, pi
+from math import cos, sin, pi, trunc
 from OCC.Core.gp import gp_Pnt, gp_Pnt2d, gp_Trsf, gp_Ax1
 from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakePrism
 from OCC.Core.BRepAlgoAPI import BRepAlgoAPI_Fuse
+from OCC.Core.BRepFilletAPI import BRepFilletAPI_MakeFillet
+from OCC.Core.TopExp import TopExp_Explorer
+from OCC.Core.TopAbs import TopAbs_EDGE
+from OCC.Core.BRep import BRep_Tool
+from OCC.Core.ShapeAnalysis import ShapeAnalysis_Edge
 from OCC.Core.GCE2d import GCE2d_MakeArcOfCircle
 from OCC.Core.BRepBuilderAPI import (BRepBuilderAPI_MakeEdge2d, BRepBuilderAPI_MakeWire,
                                      BRepBuilderAPI_MakeFace, BRepBuilderAPI_Transform, )
@@ -9,23 +14,8 @@ from OCC.Core.BRepBuilderAPI import (BRepBuilderAPI_MakeEdge2d, BRepBuilderAPI_M
 
 class SlotsBuilder:
 
-    def __init__(self, input):
-        self.input = input
-
-        # self.p1_2d = gp_Pnt2d(points["inner"][0], points["inner"][1])
-        # self.p2_2d = gp_Pnt2d(points["inner"][0], -points["inner"][1])
-        # self.p3_2d = gp_Pnt2d(points["outer"][0], points["outer"][1])
-        # self.p4_2d = gp_Pnt2d()
-        # self.pt_2d = gp_Pnt2d(slot_top_radius, 0)
-        # self.pb_2d = gp_Pnt2d(slot_base_radius, 0)
-        # self.p1_3d = gp_Pnt(self.p1_2d.Coord(1), self.p1_2d.Coord(2), 0)
-        # self.p2_3d = gp_Pnt(self.p2_2d.Coord(1), self.p2_2d.Coord(2), 0)
-        # self.p3_3d = gp_Pnt(self.p3_2d.Coord(1), self.p3_2d.Coord(2), 0)
-        # self.p4_3d = gp_Pnt(self.p4_2d.Coord(1), self.p4_2d.Coord(2), 0)
-        # self.p1_3d_e = gp_Pnt(self.p1_2d.Coord(1), self.p1_2d.Coord(2), input["active_length"])
-        # self.p2_3d_e = gp_Pnt(self.p2_2d.Coord(1), self.p2_2d.Coord(2), input["active_length"])
-        # self.p3_3d_e = gp_Pnt(self.p3_2d.Coord(1), self.p3_2d.Coord(2), input["active_length"])
-        # self.p4_3d_e = gp_Pnt(self.p4_2d.Coord(1), self.p4_2d.Coord(2), input["active_length"])
+    def __init__(self, _input):
+        self.input = _input
 
     def body(self, points):
         inner_point_positive = gp_Pnt2d(points["inner"][0], points["inner"][1])
@@ -113,8 +103,43 @@ class SlotsBuilder:
         opening.Build()
         return opening.Shape()
 
-    def fillet(self, slot):
-        pass
+    def fillet(self, points, slot):
+        inner_coord_positive = self._trunc([points["inner"][0], points["inner"][1], 0])
+        inner_coord_negative = self._trunc([points["inner"][0], -points["inner"][1], 0])
+        outer_coord_positive = self._trunc([points["outer"][0], points["outer"][1], 0])
+        outer_coord_negative = self._trunc([points["outer"][0], -points["outer"][1], 0])
+        inner_coord_positive_e = self._trunc([points["inner"][0], points["inner"][1], self.input["active_length"]])
+        inner_coord_negative_e = self._trunc([points["inner"][0], -points["inner"][1], self.input["active_length"]])
+        outer_coord_positive_e = self._trunc([points["outer"][0], points["outer"][1], self.input["active_length"]])
+        outer_coord_negative_e = self._trunc([points["outer"][0], -points["outer"][1], self.input["active_length"]])
+
+        fillets = BRepFilletAPI_MakeFillet(slot)
+        edges = TopExp_Explorer(slot, TopAbs_EDGE)
+        while edges.More():
+            current_edge = edges.Current()
+            first_point = BRep_Tool().Pnt(ShapeAnalysis_Edge().FirstVertex(current_edge))
+            last_point = BRep_Tool().Pnt(ShapeAnalysis_Edge().LastVertex(current_edge))
+            first_point = self._trunc([first_point.Coord(1), first_point.Coord(2), first_point.Coord(3)])
+            last_point = self._trunc([last_point.Coord(1), last_point.Coord(2), last_point.Coord(3)])
+            if first_point == inner_coord_positive and last_point == inner_coord_positive_e:
+                if self.input["fillet_type"] == "Both" or self.input["fillet_type"] == "Inner":
+                    fillets.Add(self.input["fillet_radius_top"], current_edge)
+            elif first_point == inner_coord_negative and last_point == inner_coord_negative_e:
+                if self.input["fillet_type"] == "Both" or self.input["fillet_type"] == "Inner":
+                    fillets.Add(self.input["fillet_radius_top"], current_edge)
+            elif first_point == outer_coord_positive and last_point == outer_coord_positive_e:
+                if self.input["fillet_type"] == "Both" or self.input["fillet_type"] == "Outer":
+                    fillets.Add(self.input["fillet_radius_base"], current_edge)
+            elif first_point == outer_coord_negative and last_point == outer_coord_negative_e:
+                if self.input["fillet_type"] == "Both" or self.input["fillet_type"] == "Outer":
+                    fillets.Add(self.input["fillet_radius_base"], current_edge)
+            edges.Next()
+        fillets.Build()
+        try:
+            slot = fillets.Shape()
+        except RuntimeError:
+            return "Fillet radius is too large for the stator slot."
+        return slot
 
     def multiple(self, slot):
         rot = gp_Trsf()
@@ -132,5 +157,19 @@ class SlotsBuilder:
             num_of_box += 1
         return fused_slots
 
-    def trunc(self):
-        pass
+    @staticmethod
+    def _trunc(arr):
+        ret = []
+        for coord in arr:
+            ret.append(trunc(coord * 1_000_000) / 1_000_000)
+        return ret
+
+# print("inner + : ", inner_coord_positive)
+# print("inner ++: ", inner_coord_positive_e)
+# print("inner - : ", inner_coord_negative)
+# print("inner --: ", inner_coord_negative_e)
+#
+# print("outer + : ", outer_coord_positive)
+# print("outer ++: ", outer_coord_positive_e)
+# print("outer - : ", outer_coord_negative)
+# print("outer --: ", outer_coord_negative_e)

@@ -27,7 +27,7 @@ stator_type = "Inner"
 slot_type = "Curved"
 
 # Slot Fillet Type: "Fillet" , "No Fillet"
-slot_fillet_type = "No Fillet"
+slot_fillet_type = "Fillet"
 
 # Style of the stator's teeth's feet: "Flat", "Tilt"
 teeth_feet_type = "Flat"
@@ -321,7 +321,7 @@ stator = BRepAlgoAPI_Cut(stator, fused_slot).Shape()
 # Display shape
 # display.DisplayShape(centre_cylinder, update=True)
 display.DisplayShape(stator, update=True)
-display.DisplayShape(test_edge, update=True)
+# display.DisplayShape(test_edge, update=True)
 # display.DisplayShape(slot, update=True)
 
 start_display()
