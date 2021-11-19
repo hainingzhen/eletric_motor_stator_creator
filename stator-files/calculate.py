@@ -35,9 +35,9 @@ class Calculate:
         if self.input["teeth_width_type"] == "Expanding":
             teeth_angle_inner = 2 * asin(self.input["teeth_width"] / 2 / inner_radius)
             teeth_angle_outer = teeth_angle_inner
-        elif self.input["teeth_width_type"] == "Manual":
-            teeth_angle_inner = 2 * asin(self.input["inner_teeth_width"] / 2 / inner_radius)
-            teeth_angle_outer = 2 * asin(self.input["outer_teeth_width"] / 2 / outer_radius)
+        # elif self.input["teeth_width_type"] == "Manual":
+        #     teeth_angle_inner = 2 * asin(self.input["inner_teeth_width"] / 2 / inner_radius)
+        #     teeth_angle_outer = 2 * asin(self.input["outer_teeth_width"] / 2 / outer_radius)
         else:
             teeth_angle_inner = 2 * asin(self.input["teeth_width"] / 2 / inner_radius)
             teeth_angle_outer = 2 * asin(self.input["teeth_width"] / 2 / outer_radius)

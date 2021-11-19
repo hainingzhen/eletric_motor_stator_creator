@@ -1,5 +1,5 @@
 from math import cos, sin, pi, trunc
-from OCC.Core.gp import gp_Pnt, gp_Pnt2d, gp_Trsf, gp_Ax1
+from OCC.Core.gp import gp_Pnt, gp_Pnt2d, gp_Trsf, gp_Ax1, gp_Vec
 from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakePrism
 from OCC.Core.BRepAlgoAPI import BRepAlgoAPI_Fuse
 from OCC.Core.BRepFilletAPI import BRepFilletAPI_MakeFillet
@@ -38,7 +38,7 @@ class SlotsBuilder:
         negative_edge = BRepBuilderAPI_MakeEdge2d(inner_point_negative, outer_point_negative).Edge()
         slot_wire = BRepBuilderAPI_MakeWire(inner_edge, positive_edge, outer_edge, negative_edge).Wire()
         slot_face = BRepBuilderAPI_MakeFace(slot_wire, True).Face()
-        slot = BRepPrimAPI_MakePrism(slot_face, self.input["active_length_vec"], False, True)
+        slot = BRepPrimAPI_MakePrism(slot_face, gp_Vec(0, 0, self.input["active_length"]), False, True)
         slot.Build()
         return slot.Shape()
 
@@ -99,7 +99,7 @@ class SlotsBuilder:
             opening_wire = BRepBuilderAPI_MakeWire(opening_wire, negative_edge_outer).Wire()
             opening_wire = BRepBuilderAPI_MakeWire(opening_wire, negative_edge_inner).Wire()
         opening_face = BRepBuilderAPI_MakeFace(opening_wire, True).Face()
-        opening = BRepPrimAPI_MakePrism(opening_face, self.input["active_length_vec"], False, True)
+        opening = BRepPrimAPI_MakePrism(opening_face, gp_Vec(0, 0, self.input["active_length"]), False, True)
         opening.Build()
         return opening.Shape()
 
@@ -123,16 +123,16 @@ class SlotsBuilder:
             last_point = self._trunc([last_point.Coord(1), last_point.Coord(2), last_point.Coord(3)])
             if first_point == inner_coord_positive and last_point == inner_coord_positive_e:
                 if self.input["fillet_type"] == "Both" or self.input["fillet_type"] == "Inner":
-                    fillets.Add(self.input["fillet_radius_top"], current_edge)
+                    fillets.Add(self.input["fillet_radius_inner"], current_edge)
             elif first_point == inner_coord_negative and last_point == inner_coord_negative_e:
                 if self.input["fillet_type"] == "Both" or self.input["fillet_type"] == "Inner":
-                    fillets.Add(self.input["fillet_radius_top"], current_edge)
+                    fillets.Add(self.input["fillet_radius_inner"], current_edge)
             elif first_point == outer_coord_positive and last_point == outer_coord_positive_e:
                 if self.input["fillet_type"] == "Both" or self.input["fillet_type"] == "Outer":
-                    fillets.Add(self.input["fillet_radius_base"], current_edge)
+                    fillets.Add(self.input["fillet_radius_outer"], current_edge)
             elif first_point == outer_coord_negative and last_point == outer_coord_negative_e:
                 if self.input["fillet_type"] == "Both" or self.input["fillet_type"] == "Outer":
-                    fillets.Add(self.input["fillet_radius_base"], current_edge)
+                    fillets.Add(self.input["fillet_radius_outer"], current_edge)
             edges.Next()
         fillets.Build()
         try:

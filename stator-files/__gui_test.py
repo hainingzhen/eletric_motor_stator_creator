@@ -1,7 +1,5 @@
-from advanced_creator import AdvancedStatorCreator
+from __advanced_creator_test import AdvancedStatorCreator
 from OCC.Display.SimpleGui import init_display
-
-from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeCylinder
 
 
 class Gui:
@@ -16,7 +14,7 @@ class Gui:
         if isinstance(slot, str):
             self.error(slot)
             return
-        display, start_display, add_menu, add_function_to_menu = init_display()
+        display, start_display, add_menu, add_function_to_menu = init_display('wx')
         display.DisplayShape(self.asc.stator(slot, base), update=True)
         start_display()
 
