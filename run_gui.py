@@ -69,7 +69,6 @@ class GeomGUI(QMainWindow):
         self.teeth_feet_type_combobox = QComboBox()
         self.teeth_feet_type_combobox.addItems(["Default", "Custom", "No Feet"])
         self.teeth_width_type_combobox = QComboBox()
-        # self.teeth_width_type_combobox.addItems(["Constant", "Expanding", "Manual"])
         self.teeth_width_type_combobox.addItems(["Constant", "Expanding"])
 
         self.active_length = QLineEdit()
