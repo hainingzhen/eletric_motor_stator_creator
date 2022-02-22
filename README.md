@@ -19,19 +19,19 @@ Go to the root of the folder, then run `python run_gui.py` in your terminal to s
 ## Images
 
 #### GUI
-![GUI](README/images/gui.png)
+![GUI](README/images/gui.PNG)
 
 #### Error Messages
-![Error Messages](README/images/error_message.png)
+![Error Messages](README/images/error_message.PNG)
 
 #### Inner and Outer Stators
-![Outer](README/images/stanard_outer_stator.png)
-![Inner](README/images/stanard_inner_stator.png)
+![Outer](README/images/stanard_outer_stator.PNG)
+![Inner](README/images/stanard_inner_stator.PNG)
 
 #### Adjusting Number of Stator Teeth
-![Num of Teeth](README/images/more_teeth.png)
+![Num of Teeth](README/images/more_teeth.PNG)
 
 
 #### Teeth Feet Styles
-![No Feet](README/images/no_teeth.png)
-![Custom Feet](README/images/custom_teeth.png)
+![No Feet](README/images/no_teeth.PNG)
+![Custom Feet](README/images/custom_teeth.PNG)
