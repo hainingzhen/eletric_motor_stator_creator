@@ -1,4 +1,4 @@
-from math import pi, cos, sin, atan, asin, radians
+from math import pi, cos, sin, atan, asin, radians, sqrt
 import sympy as sym
 
 
@@ -64,6 +64,18 @@ class Calculate:
             "constant": constant
         }
 
+    @staticmethod
+    def intersect(radius, gradient, constant):
+        x, y = sym.symbols('x,y')
+        straight_eq = sym.Eq(-gradient * x + y, constant)
+        circular_eq = sym.Eq(x ** 2 + y ** 2, radius ** 2)
+        results = sym.solve([straight_eq, circular_eq], (x, y))
+        for result in results:
+            if result[0] > 0:
+                x = float(result[0])
+                y = float(result[1])
+        return x, y
+
     def points_body(self):
         if self.input["stator_type"] == "Outer":
             if self.input["slot_type"] == "Curved":
@@ -72,10 +84,16 @@ class Calculate:
                     "outer": [self.body["outer"][0], self.body["outer"][1], self.body["outer_radius"]]
                 }
             else:
+                _x = self.body["outer_radius"]
+                _y = self.body["gradient"] * self.body["outer_radius"] + self.body["constant"]
+                if sqrt(_x**2 + _y**2) >= self.input["stator_outer_radius"]:
+                    return "Flat slot bottom is incompatible, please try the following: " \
+                           " (1) Use curved slot bottom" \
+                           " (2) Reduce slot depth" \
+                           " (3) Increase the number of slots "
                 return {
                     "inner": [self.body["inner"][0], self.body["inner"][1], self.body["inner_radius"]],
-                    "outer": [self.body["outer_radius"],
-                              self.body["gradient"] * self.body["outer_radius"] + self.body["constant"]]
+                    "outer": [_x, _y]
                 }
         else:
             if self.input["slot_type"] == "Curved":
@@ -89,18 +107,6 @@ class Calculate:
                               self.body["gradient"] * self.body["inner_radius"] + self.body["constant"]],
                     "outer": [self.body["outer"][0], self.body["outer"][1], self.body["outer_radius"]]
                 }
-
-    @staticmethod
-    def intersect(radius, gradient, constant):
-        x, y = sym.symbols('x,y')
-        straight_eq = sym.Eq(-gradient * x + y, constant)
-        circular_eq = sym.Eq(x**2 + y**2, radius**2)
-        results = sym.solve([straight_eq, circular_eq], (x, y))
-        for result in results:
-            if result[0] > 0:
-                x = float(result[0])
-                y = float(result[1])
-        return x, y
 
     def points_opening(self, points_body):
         if self.input["stator_type"] == "Outer":

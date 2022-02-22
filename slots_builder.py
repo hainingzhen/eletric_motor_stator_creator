@@ -163,13 +163,3 @@ class SlotsBuilder:
         for coord in arr:
             ret.append(trunc(coord * 1_000_000) / 1_000_000)
         return ret
-
-# print("inner + : ", inner_coord_positive)
-# print("inner ++: ", inner_coord_positive_e)
-# print("inner - : ", inner_coord_negative)
-# print("inner --: ", inner_coord_negative_e)
-#
-# print("outer + : ", outer_coord_positive)
-# print("outer ++: ", outer_coord_positive_e)
-# print("outer - : ", outer_coord_negative)
-# print("outer --: ", outer_coord_negative_e)

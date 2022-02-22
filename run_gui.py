@@ -166,8 +166,8 @@ class GeomGUI(QMainWindow):
 
     def input_check(self):
         try:
-            if int(self.num_of_slots.text()) < 2:
-                self.raise_error("Invalid Input", "Minimum number of slots/teeth is 2.")
+            if int(self.num_of_slots.text()) < 3:
+                self.raise_error("Invalid Input", "Minimum number of slots/teeth is 3.")
                 return True
             if int(self.active_length.text()) <= 0:
                 self.raise_error("Invalid Input", "Active length cannot be 0.")
@@ -217,7 +217,6 @@ class GeomGUI(QMainWindow):
     def draw(self):
         if self.input_check():
             return
-
         inputs = {"stator_type":                self.machineTypeComboBox.currentText(),
                   "slot_type":                  self.slotTypeComboBox.currentText(),
                   "teeth_feet_type":            self.teeth_feet_type_combobox.currentText(),
@@ -235,7 +234,6 @@ class GeomGUI(QMainWindow):
                   "fillet_radius_inner":    int(self.fillet_radius_inner.text()),
                   "fillet_radius_outer":    int(self.fillet_radius_outer.text()),
                   }
-
         asc = AdvancedStatorCreator(inputs)
         base = asc.base()
         slot = asc.slot()
@@ -252,7 +250,6 @@ class GeomGUI(QMainWindow):
 
 def main():
     app = QApplication(sys.argv)
-
     editor = GeomGUI()
     editor.show()
     sys.exit(app.exec_())
