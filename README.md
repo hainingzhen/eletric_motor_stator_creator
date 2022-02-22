@@ -4,6 +4,8 @@ Thanks to the information and data provided by Dr. Nick Simpson, University of B
 
 Create 3D stator models using physical parameters.
 
+Note: Only works with Windows.
+
 ## Dependencies
 
 1. pythonOCC - https://github.com/tpaviot/pythonocc-core
@@ -12,7 +14,24 @@ Create 3D stator models using physical parameters.
 
 Download the above dependencies following the instructions from the above links.
 
-Go to the root of the folder, then run `python run_gui.py` in your console to start the GUI.
+Go to the root of the folder, then run `python run_gui.py` in your terminal to start the GUI.
 
 ## Images
 
+#### GUI
+![GUI](README/images/gui.png)
+
+#### Error Messages
+![Error Messages](README/images/error_message.png)
+
+#### Inner and Outer Stators
+![Outer](README/images/stanard_outer_stator.png)
+![Inner](README/images/stanard_inner_stator.png)
+
+#### Adjusting Number of Stator Teeth
+![Num of Teeth](README/images/more_teeth.png)
+
+
+#### Teeth Feet Styles
+![No Feet](README/images/no_teeth.png)
+![Custom Feet](README/images/custom_teeth.png)
