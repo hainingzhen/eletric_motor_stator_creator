@@ -25,8 +25,8 @@ Go to the root of the folder, then run `python run_gui.py` in your terminal to s
 ![Error Messages](README/images/error_message.PNG)
 
 #### Inner and Outer Stators
-![Outer](README/images/stanard_outer_stator.PNG)
-![Inner](README/images/stanard_inner_stator.PNG)
+![Outer](README/images/standard_outer_stator.PNG)
+![Inner](README/images/standard_inner_stator.PNG)
 
 #### Adjusting Number of Stator Teeth
 ![Num of Teeth](README/images/more_teeth.PNG)
